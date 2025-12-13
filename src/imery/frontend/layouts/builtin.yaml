@@ -1,0 +1,10 @@
+widgets:
+  # ============================================================================
+  # GENERIC TREE VIEW - Recursive tree display without selection
+  # ============================================================================
+  tree-view:
+    type: composite
+    body:
+      - foreach-child:
+          - tree-node:
+              body: builtin.tree-view

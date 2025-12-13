@@ -1,0 +1,167 @@
+"""
+Widget subclasses - primitive widgets for imgui
+"""
+
+from imgui_bundle import imgui
+from imery.frontend.widget import Widget
+from imery.frontend.decorators import widget
+from imery.result import Result, Ok
+
+
+@widget
+class Text(Widget):
+    """Text display widget"""
+
+    def _pre_render_head(self) -> Result[None]:
+        res = self._field_values.get("label")
+        if not res:
+            return Result.error("Text: failed to get label", res)
+        imgui.text(res.unwrapped)
+        return Ok(None)  # Text widget never opens
+
+
+@widget
+class BulletText(Widget):
+    """Bullet text widget - text with bullet point"""
+
+    def _pre_render_head(self) -> Result[None]:
+        res = self._field_values.get("label")
+        if not res:
+            return Result.error("BulletText: failed to get label", res)
+        imgui.bullet_text(res.unwrapped)
+        return Ok(None)
+
+
+@widget
+class SeparatorText(Widget):
+    """Separator with text label"""
+
+    def _pre_render_head(self) -> Result[None]:
+        res = self._field_values.get("label")
+        if not res:
+            return Result.error("SeparatorText: failed to get label", res)
+        imgui.separator_text(res.unwrapped)
+        return Ok(None)
+
+
+@widget
+class Separator(Widget):
+    """Separator widget"""
+
+    def _prepare_render(self) -> Result[None]:
+        # Separator doesn't need label or metadata
+        return Ok(None)
+
+    def _pre_render_head(self) -> Result[None]:
+        imgui.separator()
+        return Ok(None)
+
+
+@widget
+class SameLine(Widget):
+    """SameLine widget"""
+
+    def _prepare_render(self) -> Result[None]:
+        # SameLine doesn't need label or metadata
+        return Ok(None)
+
+    def _pre_render_head(self) -> Result[None]:
+        imgui.same_line()
+        return Ok(None)
+
+
+@widget
+class Combo(Widget):
+    """Combo box widget"""
+    # TODO ... implement this as similar to other tree like using imgui.begin_combo("combo 1", combo_preview_value, static.flags):
+    # similar to 
+
+
+    def _pre_render_head(self) -> Result[None]:
+        if not self._data_path:
+            return Result.error("Combo requires path (id)")
+
+        # Get value using field_values
+        value_res = self._field_values.get("label")
+        if not value_res:
+            return Result.error(f"Combo: failed to get value", value_res)
+        current_value = value_res.unwrapped
+
+        if not isinstance(self._params, dict):
+            return Result.error(f"Combo params must be dict, got {type(self._params)}")
+
+        items = self._params.get("items", [])
+
+        try:
+            idx = items.index(str(current_value))
+        except ValueError:
+            idx = 0
+
+        imgui_id = f"###{self.uid}"
+        changed, idx = imgui.combo(imgui_id, idx, items)
+        if changed and 0 <= idx < len(items):
+            set_res = self._field_values.set("label", items[idx])
+            if not set_res:
+                return Result.error(f"Combo: failed to set value", set_res)
+
+        return Ok(None)
+
+
+@widget
+class Checkbox(Widget):
+    """Checkbox widget"""
+
+
+    def _pre_render_head(self) -> Result[None]:
+        if not self._data_path:
+            return Result.error("Checkbox requires path (id)")
+
+        # Get value using field_values
+        value_res = self._field_values.get("label")
+        if not value_res:
+            return Result.error(f"Checkbox: failed to get value", value_res)
+        current_value = str(value_res.unwrapped).lower() in ("true", "1", "yes")
+
+        imgui_id = f"###{self.uid}"
+
+        changed, new_val = imgui.checkbox(imgui_id, current_value)
+        if changed:
+            set_res = self._field_values.set("label", str(new_val))
+            if not set_res:
+                return Result.error(f"Checkbox: failed to set value", set_res)
+
+        return Ok(None)
+
+
+@widget
+class RadioButton(Widget):
+    """Radio button widget"""
+
+    def _pre_render_head(self) -> Result[None]:
+        if not self._data_path:
+            return Result.error("RadioButton requires path (id)")
+
+        # Get current value from data
+        value_res = self._field_values.get("label")
+        if not value_res:
+            return Result.error(f"RadioButton: failed to get value", value_res)
+        current_value = value_res.unwrapped
+
+        # Get this radio button's value from params
+        label_res = self._field_values.get("label", "")
+        button_value = self._params.get("value")
+        if button_value is None:
+            return Result.error("RadioButton requires 'value' parameter")
+
+        # Radio button is active if current value matches button value
+        active = (current_value == button_value)
+
+        imgui_id = f"###{self.uid}"
+        if imgui.radio_button(imgui_id, active):
+            # Set the value to this button's value
+            set_res = self._field_values.set("label", button_value)
+            if not set_res:
+                return Result.error(f"RadioButton: failed to set value", set_res)
+
+        return Ok(None)
+

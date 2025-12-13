@@ -1,0 +1,9 @@
+widgets:
+  images-demo:
+    type: composite
+    body:
+      - separator-text: "Images"
+
+      - text: "Image widgets require texture IDs"
+      - text: "See imgui_demo.py for examples"
+      - text: "ImGui::Image(), ImGui::ImageButton()"

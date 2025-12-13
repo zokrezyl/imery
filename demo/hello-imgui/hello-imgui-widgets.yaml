@@ -1,0 +1,115 @@
+import:
+  - widgets
+
+widgets:
+  # ============================================================================
+  # KERNEL TREE VIEW for dockable window
+  # ============================================================================
+  kernel-tree-view:
+    type: composite
+    body:
+      - text:
+          label: "Kernel TreeLike Demo"
+          style:
+            text: [0.7, 0.9, 0.7, 1.0]
+      - separator
+      - text: "Click nodes to select, hover to see metadata"
+      - separator
+      - text: "Selection: "
+      - same-line
+      - text:
+          data-map:
+            label: selection
+          style:
+            text: [0.2, 1.0, 0.2, 1.0]
+      - separator
+      - data-id: kernel
+        widgets.kernel-recursive:
+
+  # ============================================================================
+  # IMPLOT WRAPPER for dockable window
+  # ============================================================================
+  implot-wrapper:
+    type: composite
+    body:
+      - text:
+          label: "Waveform Plots"
+          style:
+            text: [0.7, 0.7, 0.9, 1.0]
+      - separator
+      - implot-group:
+          label: "Waveforms"
+          rows: 3
+          cols: 1
+          size: [-1, -1]
+          body:
+            - implot:
+                label: "Sine Wave"
+                body:
+                  - implot-layer:
+                      label: "Sine"
+                    data-id: /kernel/providers/waveform/available/sine/0
+            - implot:
+                label: "Square Wave"
+                body:
+                  - implot-layer:
+                      label: "Square"
+                    data-id: /kernel/providers/waveform/available/square/0
+            - implot:
+                label: "Triangle Wave"
+                body:
+                  - implot-layer:
+                      label: "Triangle"
+                    data-id: /kernel/providers/waveform/available/triangle/0
+
+  # ============================================================================
+  # LOGS VIEW for dockable window
+  # ============================================================================
+  logs-view:
+    type: composite
+    body:
+      - text:
+          label: "Application Logs"
+          style:
+            text: [0.9, 0.9, 0.7, 1.0]
+      - separator
+      - bullet-text: "Application started"
+      - bullet-text: "Loaded docking layout"
+      - bullet-text: "Initialized kernel"
+      - bullet-text: "Ready for operations"
+      - separator
+      - text: "Log level: INFO"
+
+  # ============================================================================
+  # CONTROLS VIEW for dockable window
+  # ============================================================================
+  controls-view:
+    type: composite
+    body:
+      - text:
+          label: "Controls"
+          style:
+            text: [0.9, 0.7, 0.7, 1.0]
+      - separator
+      - button:
+          label: "Start Recording"
+      - button:
+          label: "Stop Recording"
+      - separator
+      - text: "Volume:"
+      - data-id: volume
+        slider-float:
+          min: 0.0
+          max: 1.0
+      - separator
+      - text: "Sample Rate:"
+      - data-id: sample-rate
+        combo:
+          items:
+            - "44100 Hz"
+            - "48000 Hz"
+            - "96000 Hz"
+      - separator
+      - data-id: monitoring
+        checkbox:
+          label: "Enable Monitoring"

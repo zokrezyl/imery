@@ -1,0 +1,52 @@
+widgets:
+  basic-demo:
+    type: composite
+    body:
+      - separator-text: "General"
+
+      - button:
+          label: "Button"
+      - text: "Click the button!"
+
+      - separator-text: "Inputs"
+
+      - data-id: input-text
+        input-text:
+
+      - data-id: input-int
+        input-int:
+
+      - data-id: input-float
+        input-float:
+
+      - separator-text: "Sliders"
+
+      - data-id: slider-int
+        slider-int:
+          min: 0
+          max: 100
+
+      - data-id: slider-float
+        slider-float:
+          min: 0.0
+          max: 1.0
+
+      - separator-text: "Checkbox & Radio"
+
+      - data-id: checkbox
+        checkbox:
+
+      - data-id: radio
+        radio-button:
+          value: 0
+          label: "Radio A"
+
+      - data-id: radio
+        radio-button:
+          value: 1
+          label: "Radio B"
+
+      - data-id: radio
+        radio-button:
+          value: 2
+          label: "Radio C"

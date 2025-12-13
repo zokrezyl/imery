@@ -1,0 +1,24 @@
+widgets:
+  tooltips-demo:
+    type: composite
+    body:
+      - separator-text: "Basic Tooltip"
+
+      - button:
+          label: "Hover me"
+          body:
+            - tooltip:
+                body:
+                  - text: "I am a tooltip!"
+
+      - separator-text: "Advanced Tooltip"
+
+      - button:
+          label: "Hover for details"
+          body:
+            - tooltip:
+                body:
+                  - text: "This is a more detailed tooltip"
+                  - bullet-text: "Point 1"
+                  - bullet-text: "Point 2"
+                  - bullet-text: "Point 3"

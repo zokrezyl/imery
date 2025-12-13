@@ -1,0 +1,29 @@
+widgets:
+  drags-demo:
+    type: composite
+    body:
+      - separator-text: "Drag Int"
+
+      - data-id: drag-int
+        drag-int:
+          min: 0
+          max: 100
+
+      - separator-text: "Drag Float"
+
+      - data-id: drag-float
+        drag-float:
+          min: 0.0
+          max: 1.0
+
+      - separator-text: "Drag Range"
+
+      - data-id: drag-int-min
+        drag-int:
+          min: 0
+          max: 100
+
+      - data-id: drag-int-max
+        drag-int:
+          min: 0
+          max: 100

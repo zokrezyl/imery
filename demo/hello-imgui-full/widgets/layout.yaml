@@ -1,0 +1,36 @@
+widgets:
+  layout-demo:
+    type: composite
+    body:
+      - separator-text: "Child Windows"
+
+      - child:
+          id: "child1"
+          size: [0, 100]
+          border: true
+          body:
+            - text: "This is a child window"
+            - button:
+                label: "Click me"
+
+      - separator-text: "Columns"
+
+      - columns:
+          count: 3
+          id: "cols"
+          body:
+            - text: "Column 1"
+            - next-column:
+            - text: "Column 2"
+            - next-column:
+            - text: "Column 3"
+
+      - separator-text: "Groups"
+
+      - group:
+          body:
+            - button:
+                label: "Button 1"
+            - same-line:
+            - button:
+                label: "Button 2"

@@ -1,0 +1,20 @@
+widgets:
+  colors-demo:
+    type: composite
+    body:
+      - separator-text: "Color Edit"
+
+      - data-id: color-rgb
+        color-edit:
+          format: rgb
+
+      - separator-text: "Color Edit with Alpha"
+
+      - data-id: color-rgba
+        color-edit:
+          format: rgba
+
+      - separator-text: "Color Button"
+
+      - data-id: color-button
+        color-button:

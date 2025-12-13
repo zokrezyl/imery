@@ -1,0 +1,36 @@
+widgets:
+  markdown-demo:
+    type: composite
+    body:
+      - separator-text: "Basic Markdown"
+
+      - data-id: markdown-basic
+        markdown:
+
+      - separator:
+
+      - separator-text: "Tables"
+
+      - data-id: markdown-tables
+        markdown:
+
+      - separator:
+
+      - separator-text: "Links and Horizontal Rules"
+
+      - data-id: markdown-links
+        markdown:
+
+      - separator:
+
+      - separator-text: "Advanced Features"
+
+      - data-id: markdown-advanced
+        markdown:
+
+      - separator:
+
+      - separator-text: "Complete Reference"
+
+      - data-id: markdown-comprehensive
+        markdown:

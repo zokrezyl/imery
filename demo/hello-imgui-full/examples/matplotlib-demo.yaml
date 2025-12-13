@@ -1,0 +1,11 @@
+widgets:
+  matplotlib-demo:
+    type: composite
+    body:
+      - text: "Matplotlib Integration Demo"
+      - separator:
+      - text: "Animated Figure:"
+      - text: "(Matplotlib plots can be embedded)"
+      - separator:
+      - text: "Static Figure:"
+      - text: "(Matplotlib integration example)"

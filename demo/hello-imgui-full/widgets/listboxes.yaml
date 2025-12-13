@@ -1,0 +1,10 @@
+widgets:
+  listboxes-demo:
+    type: composite
+    body:
+      - separator-text: "List Box"
+
+      - data-id: listbox-selection
+        listbox:
+          items: ["Apple", "Banana", "Cherry", "Date", "Fig", "Grape"]
+          height: 4

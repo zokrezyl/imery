@@ -1,0 +1,17 @@
+widgets:
+  text-demo:
+    type: composite
+    body:
+      - separator-text: "Text Display"
+
+      - text: "This is regular text"
+
+      - bullet-text: "This is bullet text"
+
+      - bullet-text: "Another bullet point"
+
+      - separator-text: "Text with formatting"
+
+      - text: "You can display various types of text"
+
+      - text: "Including multiline content"

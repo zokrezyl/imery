@@ -1,0 +1,17 @@
+widgets:
+  text-editor-demo:
+    type: composite
+    body:
+      - separator-text: "Python Editor"
+
+      - data-id: python-code
+        text-editor:
+          language: "python"
+          size: [700, 400]
+
+      - separator-text: "JavaScript Editor"
+
+      - data-id: javascript-code
+        text-editor:
+          language: "javascript"
+          size: [700, 300]

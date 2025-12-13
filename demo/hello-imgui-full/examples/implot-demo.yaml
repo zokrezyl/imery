@@ -1,0 +1,14 @@
+widgets:
+  implot-demo:
+    type: composite
+    body:
+      - text: "ImPlot Demo"
+      - separator:
+      - text: "Advanced plotting library for ImGui"
+      - bullet-text: "Line plots"
+      - bullet-text: "Bar charts"
+      - bullet-text: "Scatter plots"
+      - bullet-text: "Heatmaps"
+      - bullet-text: "Real-time data"
+      - separator:
+      - text: "See implot_demo.py for full demos"

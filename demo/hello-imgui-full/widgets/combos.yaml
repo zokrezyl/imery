@@ -1,0 +1,14 @@
+widgets:
+  combos-demo:
+    type: composite
+    body:
+      - separator-text: "Combo Box"
+
+      - data-id: combo-selection
+        combo:
+          items: ["Option 1", "Option 2", "Option 3", "Option 4"]
+
+      - separator-text: "Current Selection"
+
+      - data-id: combo-selection
+        text:

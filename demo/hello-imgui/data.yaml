@@ -1,0 +1,22 @@
+data:
+  demo-data:
+    metadata:
+      label: "Imery Docking Demo"
+      data-selection: None
+    children:
+      kernel: $kernel
+      sine:
+        metadata:
+          label: "Sine Wave"
+          layer-type: "line"
+          buffer-path: "/demo/sine"
+      square:
+        metadata:
+          label: "Square Wave"
+          layer-type: "line"
+          buffer-path: "/demo/square"
+      triangle:
+        metadata:
+          label: "Triangle Wave"
+          layer-type: "line"
+          buffer-path: "/demo/triangle"

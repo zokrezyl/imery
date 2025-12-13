@@ -1,0 +1,17 @@
+widgets:
+  bullets-demo:
+    type: composite
+    body:
+      - separator-text: "Bullet Points"
+
+      - bullet-text: "Bullet point 1"
+      - bullet-text: "Bullet point 2"
+      - bullet-text: "Bullet point 3"
+
+      - separator-text: "With Tree Nodes"
+
+      - tree-node:
+          label: "Node with bullets"
+          body:
+            - bullet-text: "Nested bullet"
+            - bullet-text: "Another nested bullet"

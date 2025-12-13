@@ -1,0 +1,33 @@
+widgets:
+  tables-demo:
+    type: composite
+    body:
+      - separator-text: "Basic Table"
+
+      - table:
+          label: "BasicTable"
+          columns: 3
+          body:
+            - row:
+                body:
+                  - column:
+                      body:
+                        - text: "A1"
+                  - column:
+                      body:
+                        - text: "A2"
+                  - column:
+                      body:
+                        - text: "A3"
+
+            - row:
+                body:
+                  - column:
+                      body:
+                        - text: "B1"
+                  - column:
+                      body:
+                        - text: "B2"
+                  - column:
+                      body:
+                        - text: "B3"

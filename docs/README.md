@@ -1,0 +1,427 @@
+# Imery Pyodide Web Demos
+
+This directory contains the web-based interactive demo system for Imery, powered by Pyodide to run Python code directly in the browser.
+
+## 🌐 Live Demo
+
+Visit the live demo at: `https://zokrezyl.github.io/imery/`
+
+## 📋 Overview
+
+The Pyodide demo allows users to:
+- **Edit YAML configuration** in an interactive editor
+- **Load demo layouts from GitHub** automatically
+- **Run Imery demos** in real-time in their browser
+- **See live ImGui rendering** via WebGL canvas
+- **Switch between different example demos** from the repo
+
+## 🏗️ Architecture
+
+### How Pyodide Works
+
+**Pyodide** is CPython compiled to WebAssembly, allowing Python to run directly in the browser.
+
+```
+┌─────────────────┐
+│   Web Browser   │
+├─────────────────┤
+│  JavaScript     │ ← User interaction, code editor
+│  ↓              │
+│  Pyodide        │ ← Python interpreter (WebAssembly)
+│  ↓              │
+│  imery package  │ ← Your Python code + YAML demos
+│  ↓              │
+│  imgui_bundle   │ ← ImGui rendering
+│  ↓              │
+│  WebGL Canvas   │ ← Visual output
+└─────────────────┘
+```
+
+**Key Components:**
+
+1. **Code Editor (CodeMirror)**: Allows users to edit Python code
+2. **Pyodide Runtime**: Executes Python code in WebAssembly
+3. **ImGui + HelloImGui**: Renders UI to WebGL canvas via Emscripten
+4. **Imery Package**: Bundled as a Python wheel, loaded into Pyodide
+
+### Directory Structure
+
+```
+docs/
+├── index.html              # Main page with editor + canvas
+├── styles.css              # Styling
+├── js/
+│   ├── main.js            # App initialization and coordination
+│   ├── pyodide_loader.js  # Pyodide initialization and package loading
+│   ├── examples.js        # Example selection and loading
+│   ├── ui.js              # UI management (editor, canvas, layout)
+│   └── emscripten_canvas.js # Canvas handling for ImGui output
+├── libs/                   # Third-party JS (CodeMirror, Tippy.js)
+├── examples/
+│   ├── examples.json      # List of available demos
+│   ├── hello_world.py     # Simple Hello World demo
+│   └── demo_full.py       # Full YAML-based demo loader
+├── pyodide_dist/          # Pyodide distribution (built by CI, git-ignored)
+│   ├── pyodide.js
+│   ├── pyodide.asm.js
+│   ├── packages/          # Python packages (numpy, imgui_bundle, etc.)
+│   └── imery-*.whl        # Imery wheel
+└── images/                # Logos and assets
+```
+
+## 📦 How YAML Files Are Packaged
+
+### Problem: YAML Files Need to Be Accessible in Browser
+
+Imery demos are defined in YAML files under `demo/hello-imgui-full/`. For these to work in Pyodide:
+
+1. **YAML files must be bundled inside the Python wheel**
+2. **Demo files must be accessible at runtime**
+
+### Solution: Package Data Configuration
+
+In `pyproject.toml`:
+
+```toml
+[tool.hatch.build.targets.wheel.force-include]
+"demo" = "imery/demo"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "src/imery/**/*.py",
+    "src/imery/**/*.yaml",
+    "demo/**/*",
+]
+```
+
+This ensures:
+- ✅ All `demo/**/*` files are copied to `imery/demo/` inside the wheel
+- ✅ All `*.yaml` files in `src/imery/` are included
+- ✅ When imery is installed in Pyodide, YAML files are accessible via Python's package system
+
+### Accessing YAML Files in Python
+
+When running in Pyodide, the demo wrapper script sets up paths:
+
+```python
+# docs/examples/demo_full.py
+import sys
+from pathlib import Path
+
+sys.argv = [
+    'imery',
+    '--main', 'hello-imgui-full',
+    '--layouts-path', str(Path(__file__).parent.parent / 'demo' / 'hello-imgui-full')
+]
+
+from imery.app import main
+main()
+```
+
+The imery CLI (`--layouts-path`) tells the framework where to find YAML layouts.
+
+## 🚀 GitHub Actions Pipeline
+
+The `.github/workflows/deploy-pyodide-demo.yml` workflow automates building and deploying the demo.
+
+### Pipeline Steps
+
+```mermaid
+graph TD
+    A[Push to main] --> B[Checkout code]
+    B --> C[Setup Python 3.13]
+    C --> D[Install uv]
+    D --> E[Build imery wheel]
+    E --> F[Download Pyodide distribution]
+    F --> G[Copy imery wheel to docs/pyodide_dist/]
+    G --> H[Upload docs/ as Pages artifact]
+    H --> I[Deploy to GitHub Pages]
+```
+
+### Detailed Workflow
+
+1. **Trigger**: On push to `main` branch or manual workflow dispatch
+
+2. **Build imery wheel**:
+   ```bash
+   uv build  # Creates dist/imery-*.whl
+   ```
+
+3. **Setup Pyodide environment**:
+   - Download Pyodide 0.26.1 distribution (includes Python interpreter + stdlib)
+   - Extract to `docs/pyodide_dist/`
+   - Copy imery wheel to `docs/pyodide_dist/`
+
+4. **Deploy to GitHub Pages**:
+   - Upload entire `docs/` directory as artifact
+   - Deploy to GitHub Pages environment
+
+### Why This Approach?
+
+- **No Pyodide in Git**: `pyodide_dist/` is ~200MB, too large for git
+- **Fresh Builds**: Each deployment gets the latest imery code
+- **Automated**: Push to main → automatic demo update
+
+## 🔧 JavaScript Module Breakdown
+
+### `pyodide_loader.js`
+
+Initializes Pyodide and loads Python packages:
+
+```javascript
+// Load Pyodide
+const pyodide = await loadPyodide({
+    indexURL: 'pyodide_dist/'
+});
+
+// Install packages
+await pyodide.loadPackage(['numpy', 'pillow']);
+
+// Load imery wheel
+await pyodide.runPythonAsync(`
+    import micropip
+    await micropip.install('emfs:/pyodide_dist/imery-0.0.3-py3-none-any.whl')
+`);
+```
+
+### `examples.js`
+
+Manages example selection and loading:
+
+```javascript
+// Load examples.json
+const examples = await fetch('examples/examples.json');
+
+// Populate dropdown
+examples.forEach(ex => {
+    dropdown.add(new Option(ex.label, ex.filename));
+});
+
+// Load selected example code
+const code = await fetch(`examples/${filename}`);
+editor.setValue(code);
+```
+
+### `ui.js`
+
+Manages the split-pane layout (editor + canvas):
+
+```javascript
+Split(['#editor-container', '#canvas-container'], {
+    sizes: [50, 50],
+    minSize: 200,
+    gutterSize: 10
+});
+```
+
+### `emscripten_canvas.js`
+
+Sets up the WebGL canvas for ImGui rendering:
+
+```javascript
+const canvas = document.getElementById('canvas');
+const gl = canvas.getContext('webgl2');
+// ImGui (via Emscripten) renders to this canvas
+```
+
+### `main.js`
+
+Coordinates everything:
+
+```javascript
+// 1. Initialize UI
+setupUI();
+
+// 2. Load Pyodide
+const pyodide = await loadPyodide();
+
+// 3. Load examples
+await loadExamples();
+
+// 4. Run button handler
+runButton.onclick = async () => {
+    const code = editor.getValue();
+    await pyodide.runPythonAsync(code);
+};
+```
+
+## 🎯 How It All Works Together
+
+### User Workflow
+
+1. **User visits page**: `index.html` loads
+2. **JavaScript initializes**:
+   - CodeMirror editor created (YAML mode)
+   - Pyodide loads (10-15 seconds)
+   - Examples list populated from `examples.json`
+3. **User selects example**:
+   - `app.yaml` loaded from GitHub into editor
+   - Example metadata stored
+4. **User edits YAML** in the editor
+5. **User clicks "Run"**:
+   - Edited YAML written to Pyodide virtual filesystem
+   - Imery runs with `--layouts-url` pointing to GitHub
+   - Imported YAML files downloaded automatically from GitHub
+   - ImGui renders to WebGL canvas
+   - User sees live interactive UI
+
+### Example Execution Flow
+
+```
+User clicks "Run"
+    ↓
+JavaScript: pyodide.runPythonAsync(code)
+    ↓
+Pyodide: Execute Python code
+    ↓
+Python: from imery.app import main
+    ↓
+Imery: Load YAML from bundled demo/
+    ↓
+Imery: Create widgets from YAML
+    ↓
+ImGui Bundle: Render widgets
+    ↓
+HelloImGui (Emscripten): Draw to WebGL canvas
+    ↓
+User sees: Interactive UI in browser
+```
+
+## 🛠️ Local Development
+
+### Testing Locally
+
+You can't just open `index.html` in a browser due to CORS restrictions. Run a local server:
+
+```bash
+# From the docs/ directory
+python3 -m http.server 8000
+
+# Or use the justfile from imgui_bundle reference:
+python3 ../../ci_scripts/webserver_multithread_policy.py -p 8005
+```
+
+Then visit: `http://localhost:8000`
+
+### Building Pyodide Distribution Locally
+
+For local testing with the full Pyodide setup:
+
+```bash
+# Build imery wheel
+make build
+
+# Create pyodide_dist directory (git-ignored)
+mkdir -p docs/pyodide_dist
+
+# Download Pyodide
+cd docs/pyodide_dist
+wget https://github.com/pyodide/pyodide/releases/download/0.26.1/pyodide-0.26.1.tar.bz2
+tar -xjf pyodide-0.26.1.tar.bz2
+mv pyodide/* .
+rm -rf pyodide pyodide-0.26.1.tar.bz2
+
+# Copy imery wheel
+cp ../../dist/imery-*.whl .
+
+# Start server
+cd ..
+python3 -m http.server 8000
+```
+
+## 📝 Adding New Examples
+
+1. **Create Python script** in `docs/examples/`:
+
+```python
+# docs/examples/my_new_demo.py
+from imgui_bundle import imgui, immapp
+
+def main():
+    imgui.text("My Custom Demo!")
+    if imgui.button("Click"):
+        print("Clicked!")
+
+if __name__ == "__main__":
+    immapp.run(main, window_title="My Demo")
+```
+
+2. **Register in examples.json**:
+
+```json
+{
+  "examples": [
+    {
+      "label": "My New Demo",
+      "filename": "my_new_demo.py"
+    }
+  ]
+}
+```
+
+3. **Commit and push** → CI will rebuild and deploy
+
+## ⚠️ Important Notes
+
+### Pyodide Limitations
+
+1. **No file system access**: Can't read/write to user's disk
+2. **Limited packages**: Only packages compiled for Pyodide work
+3. **Memory constraints**: Browser memory limits apply
+4. **Performance**: Slower than native Python
+
+### ImGui in Browser
+
+- Uses **WebGL** for rendering (not native OpenGL)
+- Compiled via **Emscripten** (C++ → WebAssembly)
+- Some platform-specific features may not work
+
+### YAML Demo Paths
+
+If your demo uses relative paths or file loading:
+- Ensure paths are relative to the package structure
+- Use `importlib.resources` for accessing package data
+- Test that paths work when bundled in wheel
+
+## 🔍 Debugging
+
+### Check Browser Console
+
+All Python `print()` statements appear in browser console:
+
+```python
+print("Debug: value =", some_value)  # Shows in browser DevTools
+```
+
+### Pyodide Not Loading
+
+- Check browser console for errors
+- Verify `pyodide_dist/` exists and contains `pyodide.js`
+- Check network tab to see if files are loading
+
+### Demo Not Running
+
+- Check if YAML files are in the wheel: `unzip -l dist/imery-*.whl | grep demo`
+- Verify layouts path in demo wrapper script
+- Check Python exceptions in browser console
+
+## 📚 References
+
+- [Pyodide Documentation](https://pyodide.org/)
+- [ImGui Bundle](https://github.com/pthom/imgui_bundle)
+- [Emscripten](https://emscripten.org/)
+- [GitHub Pages Deployment](https://docs.github.com/en/pages)
+
+## 🤝 Contributing
+
+To improve the demos:
+
+1. Test locally using the local server
+2. Add new examples in `docs/examples/`
+3. Update `examples.json`
+4. Test in browser before committing
+5. Push to main → CI handles deployment
+
+---
+
+**Note**: The first load may take 10-15 seconds while Pyodide and dependencies download. Subsequent visits are faster due to browser caching.

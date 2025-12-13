@@ -1,0 +1,25 @@
+widgets:
+  selectables-demo:
+    type: composite
+    body:
+      - separator-text: "Basic Selectables"
+
+      - data-id: selectable-1
+        selectable:
+
+      - data-id: selectable-2
+        selectable:
+
+      - data-id: selectable-3
+        selectable:
+
+      - data-id: selectable-4
+        selectable:
+
+      - separator-text: "Multiple Selection"
+
+      - data-id: selectable-5
+        selectable:
+
+      - data-id: selectable-6
+        selectable:

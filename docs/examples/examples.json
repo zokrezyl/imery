@@ -1,0 +1,22 @@
+{
+  "examples": [
+    {
+      "label": "Classic Demo",
+      "github_path": "demo/classic",
+      "entry": "app.yaml",
+      "description": "Classic ImGui demo"
+    },
+    {
+      "label": "Hello ImGui",
+      "github_path": "demo/hello-imgui",
+      "entry": "app.yaml",
+      "description": "Basic Hello ImGui demo"
+    },
+    {
+      "label": "Hello ImGui Full",
+      "github_path": "demo/hello-imgui-full",
+      "entry": "app.yaml",
+      "description": "Full Hello ImGui demo with all features"
+    }
+  ]
+}

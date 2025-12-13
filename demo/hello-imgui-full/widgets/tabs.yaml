@@ -1,0 +1,26 @@
+widgets:
+  tabs-demo:
+    type: composite
+    body:
+      - separator-text: "Tab Bar"
+
+      - tab-bar:
+          id: "main-tabs"
+          body:
+            - tab-item:
+                label: "Tab 1"
+                body:
+                  - text: "This is tab 1 content"
+                  - button:
+                      label: "Button in tab 1"
+
+            - tab-item:
+                label: "Tab 2"
+                body:
+                  - text: "This is tab 2 content"
+                  - text: "More content here"
+
+            - tab-item:
+                label: "Tab 3"
+                body:
+                  - text: "This is tab 3 content"

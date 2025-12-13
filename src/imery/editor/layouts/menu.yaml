@@ -1,0 +1,42 @@
+widgets:
+  # ============================================================================
+  # MENU BAR CONTENT (for hello_imgui show_menus callback)
+  # ============================================================================
+  menu-bar-content:
+    type: composite
+    body:
+      - menu:
+          label: "File"
+          body:
+            - menu-item:
+                label: "Open"
+                shortcut: ""
+                selection: false
+                enabled: true
+            - menu-item:
+                label: "Save"
+                shortcut: ""
+                selection: false
+                enabled: true
+            - separator
+            - menu-item:
+                label: "Exit"
+                shortcut: ""
+                selection: false
+                enabled: true
+      - menu:
+          label: "Edit"
+          body:
+            - menu-item:
+                label: "Preferences"
+                shortcut: ""
+                selection: false
+                enabled: true
+      - menu:
+          label: "View"
+          body:
+            - menu-item:
+                label: "Refresh"
+                shortcut: ""
+                selection: false
+                enabled: true

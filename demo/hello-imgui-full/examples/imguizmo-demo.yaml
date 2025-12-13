@@ -1,0 +1,32 @@
+widgets:
+  imguizmo-demo:
+    type: composite
+    body:
+      - separator-text: "Gizmo Controls"
+
+      - data-id: gizmo-translate
+        imguizmo:
+          operation: "translate"
+          mode: "local"
+
+      - separator:
+
+      - data-id: gizmo-rotate
+        imguizmo:
+          operation: "rotate"
+          mode: "local"
+
+      - separator:
+
+      - data-id: gizmo-scale
+        imguizmo:
+          operation: "scale"
+          mode: "local"
+
+      - separator-text: "Features"
+
+      - bullet-text: "Translate gizmo"
+      - bullet-text: "Rotate gizmo"
+      - bullet-text: "Scale gizmo"
+      - bullet-text: "Matrix manipulation"
+      - bullet-text: "Local/World space"
