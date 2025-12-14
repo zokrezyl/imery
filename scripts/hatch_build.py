@@ -77,20 +77,49 @@ class YAMLAggregator:
         if 'app' in module_content:
             self.app_config = module_content['app']
 
+    def strip_module_prefix(self, ref: str) -> str:
+        """
+        Strip module prefix from a widget reference if it matches a known widget.
+
+        E.g., "widgets.kernel-demo-popup" -> "kernel-demo-popup"
+        E.g., "widgets.basic.basic-demo" -> "basic-demo"
+        E.g., "app.main-window" -> "main-window"
+        """
+        if '.' not in ref:
+            return ref
+
+        # Try progressively stripping prefixes until we find a match
+        parts = ref.split('.')
+        for i in range(1, len(parts)):
+            widget_name = '.'.join(parts[i:])
+            if widget_name in self.widgets:
+                return widget_name
+
+        return ref
+
     def process_widget_references(self, obj: Any) -> Any:
         """
         Recursively process widget references in the structure.
 
-        Widget references remain in namespaced format (e.g., "module.widget")
-        while widget declarations are stored without namespace.
+        Strips module prefixes from widget references to match the
+        aggregated widget declarations (which have no namespace).
         """
         if isinstance(obj, dict):
             result = {}
             for key, value in obj.items():
-                result[key] = self.process_widget_references(value)
+                # Widget references can appear as dict keys (e.g., "widgets.basic.demo: null")
+                new_key = self.strip_module_prefix(key)
+                # Check keys that typically contain widget references
+                if key in ('body', 'type', 'widget') and isinstance(value, str):
+                    result[new_key] = self.strip_module_prefix(value)
+                else:
+                    result[new_key] = self.process_widget_references(value)
             return result
         elif isinstance(obj, list):
             return [self.process_widget_references(item) for item in obj]
+        elif isinstance(obj, str):
+            # String values in lists might be widget references
+            return self.strip_module_prefix(obj)
         else:
             return obj
 
