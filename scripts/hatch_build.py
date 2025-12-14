@@ -59,14 +59,12 @@ class YAMLAggregator:
         for imported_module in imports:
             self.process_module(imported_module)
 
-        # Merge widgets with namespace prefix
+        # Merge widgets WITHOUT namespace in widget name, but track the module
         widgets = module_content.get('widgets', {})
         for widget_name, widget_def in widgets.items():
-            # Create namespaced name: module.widget
-            full_name = f"{module_name}.{widget_name}"
-            if full_name in self.widgets:
-                print(f"  Warning: Duplicate widget '{full_name}', overwriting")
-            self.widgets[full_name] = widget_def
+            if widget_name in self.widgets:
+                print(f"  Warning: Duplicate widget '{widget_name}' from '{module_name}', overwriting")
+            self.widgets[widget_name] = (module_name, widget_def)
 
         # Merge data
         data = module_content.get('data', {})
@@ -75,19 +73,24 @@ class YAMLAggregator:
                 print(f"  Warning: Duplicate data '{data_name}', overwriting")
             self.data[data_name] = data_def
 
-        # Capture app config (only from main module)
-        if 'app' in module_content and self.app_config is None:
+        # Capture app config from any module (last one wins)
+        if 'app' in module_content:
             self.app_config = module_content['app']
 
-    def rename_widget_references(self, obj: Any) -> Any:
-        """Recursively rename widget references in the structure."""
+    def process_widget_references(self, obj: Any) -> Any:
+        """
+        Recursively process widget references in the structure.
+
+        Widget references remain in namespaced format (e.g., "module.widget")
+        while widget declarations are stored without namespace.
+        """
         if isinstance(obj, dict):
             result = {}
             for key, value in obj.items():
-                result[key] = self.rename_widget_references(value)
+                result[key] = self.process_widget_references(value)
             return result
         elif isinstance(obj, list):
-            return [self.rename_widget_references(item) for item in obj]
+            return [self.process_widget_references(item) for item in obj]
         else:
             return obj
 
@@ -101,19 +104,19 @@ class YAMLAggregator:
 
         # Add app config if present
         if self.app_config:
-            result['app'] = self.rename_widget_references(self.app_config)
+            result['app'] = self.process_widget_references(self.app_config)
 
         # Add all widgets
         if self.widgets:
             result['widgets'] = {}
-            for full_name, widget_def in self.widgets.items():
-                result['widgets'][full_name] = self.rename_widget_references(widget_def)
+            for widget_name, (module_name, widget_def) in self.widgets.items():
+                result['widgets'][widget_name] = self.process_widget_references(widget_def)
 
         # Add all data
         if self.data:
             result['data'] = {}
             for data_name, data_def in self.data.items():
-                result['data'][data_name] = self.rename_widget_references(data_def)
+                result['data'][data_name] = self.process_widget_references(data_def)
 
         return result
 
@@ -123,9 +126,9 @@ class YAMLAggregator:
 
         with open(output_file, 'w') as f:
             # Add header comment
-            f.write("# Auto-generated aggregated YAML file\n")
+            f.write(f"# Aggregated YAML demo for browser (Pyodide)\n")
             f.write(f"# Source: {self.demo_dir}\n")
-            f.write("# Do not edit manually - generated during wheel build\n\n")
+            f.write(f"# Feel free to edit and experiment!\n\n")
 
             yaml.dump(content, f, default_flow_style=False, sort_keys=False, allow_unicode=True)
 
