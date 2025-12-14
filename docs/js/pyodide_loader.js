@@ -71,10 +71,27 @@ async function loadPyodideAndPackages() {
         // SDL support in Pyodide is experimental. The flag is used to bypass certain issues.
         pyodide._api._skip_unwind_fatal_error = true;
 
-        // List of packages to install from PyPI
+        // Determine the base URL dynamically
+        const baseUrl = `${window.location.origin}${window.location.pathname}`;
+        console.log('Base URL:', baseUrl);
+
+        // Load manifest with wheel filenames
+        let imeryWheel = null;
+        try {
+            const manifestResponse = await fetch(baseUrl + 'pyodide_dist/manifest.json');
+            const manifest = await manifestResponse.json();
+            imeryWheel = baseUrl + 'pyodide_dist/' + manifest.imery_wheel;
+            console.log('Imery wheel:', imeryWheel);
+        } catch (e) {
+            console.error('Failed to load manifest:', e);
+            displayError('Failed to load package manifest');
+            throw e;
+        }
+
+        // List of packages to install
         const packages = [
-            // Core Python packages
-            // --------------------
+            // Core Python packages from PyPI
+            // ------------------------------
             'numpy',
             'pyyaml',
             'click',
@@ -82,14 +99,15 @@ async function loadPyodideAndPackages() {
             'munch',
             'pillow',
             'typing_extensions',
+            'stringcase',
 
-            // ImGui Bundle
-            // ------------
-            'imgui_bundle',
+            // ImGui Bundle (WASM wheel from traineq.org)
+            // -------------------------------------------
+            'https://traineq.org/imgui_bundle_online/projects/imgui_bundle_playground/pyodide_dist/imgui_bundle-1.92.4-cp312-cp312-pyodide_2024_0_wasm32.whl',
 
-            // Imery (from PyPI)
-            // -----------------
-            'imery',
+            // Imery (local wheel built by CI)
+            // --------------------------------
+            imeryWheel,
         ];
 
         const totalSteps = packages.length;
