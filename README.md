@@ -8,6 +8,16 @@ Imery lets you create [Dear ImGui](https://github.com/ocornut/imgui) application
 
 Traditional GUI development with ImGui requires writing repetitive boilerplate code. Every button, slider, or layout change means modifying and recompiling your application.
 
+### Origins
+
+Imery emerged from building an audio viewing and analysis tool with imgui-bundle. We discovered that live data observation and manipulation was a central pattern - UI components constantly consuming and updating data in real-time. This led us to separate concerns in an MVC-like direction: the UI as a tree structure consuming an equivalent data tree, similar to React's approach in the web world.
+
+While most UI elements directly manipulate or observe data tree nodes, the framework also supports event generation and handling. We're also exploring a broader vision: an "Imery browser" where you write interactive applications with Python and YAML instead of HTML and JavaScript.
+
+These concepts are in early alpha. **We'd love to hear your thoughts and suggestions.**
+
+For architectural details, see [docs/design/main.md](docs/design/main.md).
+
 **Imery changes this:**
 - **Declarative** - Define your UI in YAML, not code
 - **Rapid iteration** - Edit layouts without recompiling
