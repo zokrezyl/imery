@@ -97,11 +97,19 @@ async function loadPyodideAndPackages() {
 
         for (const pkg of packages) {
             updateProgress(10 + (currentStep / totalSteps) * 80, `Installing ${pkg}...`);
-            await pyodide.runPythonAsync(`
-import micropip;
+            console.log(`Installing ${pkg}...`);
+            try {
+                await pyodide.runPythonAsync(`
+import micropip
 await micropip.install('${pkg}')
-            `);
-            console.log(`${pkg} loaded.`);
+print(f"Successfully installed ${pkg}")
+                `);
+                console.log(`${pkg} installed successfully.`);
+            } catch (err) {
+                console.error(`Failed to install ${pkg}:`, err);
+                displayError(`Failed to install ${pkg}: ${err.message}`);
+                throw err;
+            }
             currentStep++;
         }
 
