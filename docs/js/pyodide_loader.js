@@ -82,7 +82,6 @@ async function loadPyodideAndPackages() {
             'munch',
             'pillow',
             'typing_extensions',
-            'stringcase',
 
             // ImGui Bundle (WASM wheel from traineq.org)
             // -------------------------------------------
