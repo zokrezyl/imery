@@ -99,22 +99,25 @@ async function loadPyodideAndPackages() {
             updateProgress(10 + (currentStep / totalSteps) * 80, `Installing ${pkg}...`);
             console.log(`Installing ${pkg}...`);
             try {
-                await pyodide.runPythonAsync(`
+                const installCode = pkg === 'imery'
+                    ? `
 import micropip
 import sys
 print(f"Python version: {sys.version}")
+print(f"Installing imery (forcing latest)...")
+# Force reinstall to get latest version from PyPI
+await micropip.install('imery', keep_going=True, deps=True)
+import imery
+print(f"imery version: {imery.__version__ if hasattr(imery, '__version__') else 'unknown'}")
+`
+                    : `
+import micropip
+import sys
 print(f"Installing ${pkg}...")
-await micropip.install('${pkg}', verbose=True)
+await micropip.install('${pkg}', keep_going=True, deps=True)
 print(f"Successfully installed ${pkg}")
-
-# Verify it's importable
-try:
-    if '${pkg}' == 'imery':
-        import imery
-        print(f"imery version: {imery.__version__ if hasattr(imery, '__version__') else 'unknown'}")
-except ImportError as e:
-    print(f"WARNING: Could not import ${pkg}: {e}")
-                `);
+`;
+                await pyodide.runPythonAsync(installCode);
                 console.log(`${pkg} installed successfully.`);
             } catch (err) {
                 console.error(`Failed to install ${pkg}:`, err);
