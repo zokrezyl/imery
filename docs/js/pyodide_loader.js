@@ -101,8 +101,19 @@ async function loadPyodideAndPackages() {
             try {
                 await pyodide.runPythonAsync(`
 import micropip
-await micropip.install('${pkg}')
+import sys
+print(f"Python version: {sys.version}")
+print(f"Installing ${pkg}...")
+await micropip.install('${pkg}', verbose=True)
 print(f"Successfully installed ${pkg}")
+
+# Verify it's importable
+try:
+    if '${pkg}' == 'imery':
+        import imery
+        print(f"imery version: {imery.__version__ if hasattr(imery, '__version__') else 'unknown'}")
+except ImportError as e:
+    print(f"WARNING: Could not import ${pkg}: {e}")
                 `);
                 console.log(`${pkg} installed successfully.`);
             } catch (err) {
