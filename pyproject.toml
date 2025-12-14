@@ -1,26 +1,26 @@
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "pyyaml"]
 build-backend = "hatchling.build"
 
 [project]
 name = "imery"
-version = "0.0.3"
+version = "0.0.18"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.12"
 dependencies = [
-    "click>=8.3.1",
+    "click>=8.3.0",
     "httpx>=0.28.1",
-    "imgui-bundle>=1.92.5",
+    "imgui-bundle>=1.92.4",
     "munch>=4.0.0",
-    "pillow>=12.0.0",
-    "pyglm>=2.8.3",
-    "pyside6>=6.10.1",
+    "pillow>=11.3.0",
+    "pyyaml>=6.0.2",
+]
+
+[project.optional-dependencies]
+dev = [
     "pytest>=9.0.2",
-    "pyyaml>=6.0.3",
-    "stringcase>=1.2.0",
     "twine>=6.2.0",
-    "wgpu>=0.28.1",
 ]
 
 [project.scripts]
@@ -29,12 +29,17 @@ imery = "imery.app:main"
 [tool.hatch.build.targets.wheel]
 packages = ["src/imery"]
 
+[tool.hatch.build.targets.wheel.hooks.custom]
+path = "scripts/hatch_build.py"
+
 [tool.hatch.build.targets.wheel.force-include]
 "demo" = "imery/demo"
+"demo-aggregated" = "imery/demo_aggregated"
 
 [tool.hatch.build.targets.sdist]
 include = [
     "src/imery/**/*.py",
     "src/imery/**/*.yaml",
     "demo/**/*",
+    "scripts/hatch_build.py",
 ]

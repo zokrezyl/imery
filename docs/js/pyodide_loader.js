@@ -71,27 +71,10 @@ async function loadPyodideAndPackages() {
         // SDL support in Pyodide is experimental. The flag is used to bypass certain issues.
         pyodide._api._skip_unwind_fatal_error = true;
 
-        // Determine the base URL dynamically
-        const baseUrl = `${window.location.origin}${window.location.pathname}`;
-        console.log('Base URL:', baseUrl);
-
-        // Load imery wheel filename from manifest
-        let imeryWheel = null;
-        try {
-            const manifestResponse = await fetch(baseUrl + 'pyodide_dist/manifest.json');
-            const manifest = await manifestResponse.json();
-            imeryWheel = baseUrl + 'pyodide_dist/' + manifest.imery_wheel;
-            console.log('Imery wheel:', imeryWheel);
-        } catch (e) {
-            console.error('Failed to load manifest, falling back to default wheel name:', e);
-            // Fallback to current version
-            imeryWheel = baseUrl + 'pyodide_dist/imery-0.0.3-py3-none-any.whl';
-        }
-
         // List of packages to install
         const packages = [
-            // Core Python packages
-            // --------------------
+            // Core Python packages from PyPI
+            // ------------------------------
             'numpy',
             'pyyaml',
             'click',
@@ -100,25 +83,47 @@ async function loadPyodideAndPackages() {
             'pillow',
             'typing_extensions',
 
-            // ImGui Bundle
-            // ------------
+            // ImGui Bundle (Pyodide-compatible, installed via micropip)
+            // ----------------------------------------------------------
             'imgui_bundle',
 
-            // Imery (local wheel built by CI)
-            // --------------------------------
-            imeryWheel,
-        ].filter(pkg => pkg !== null);
+            // Imery (from PyPI)
+            // -----------------
+            'imery',
+        ];
 
         const totalSteps = packages.length;
         let currentStep = 1;
 
         for (const pkg of packages) {
             updateProgress(10 + (currentStep / totalSteps) * 80, `Installing ${pkg}...`);
-            await pyodide.runPythonAsync(`
-import micropip;
-await micropip.install('${pkg}')
-            `);
-            console.log(`${pkg} loaded.`);
+            console.log(`Installing ${pkg}...`);
+            try {
+                const installCode = pkg === 'imery'
+                    ? `
+import micropip
+import sys
+print(f"Python version: {sys.version}")
+print(f"Installing imery (forcing latest)...")
+# Force reinstall to get latest version from PyPI
+await micropip.install('imery', keep_going=True, deps=True)
+import imery
+print(f"imery version: {imery.__version__ if hasattr(imery, '__version__') else 'unknown'}")
+`
+                    : `
+import micropip
+import sys
+print(f"Installing ${pkg}...")
+await micropip.install('${pkg}', keep_going=True, deps=True)
+print(f"Successfully installed ${pkg}")
+`;
+                await pyodide.runPythonAsync(installCode);
+                console.log(`${pkg} installed successfully.`);
+            } catch (err) {
+                console.error(`Failed to install ${pkg}:`, err);
+                displayError(`Failed to install ${pkg}: ${err.message}`);
+                throw err;
+            }
             currentStep++;
         }
 
@@ -134,7 +139,7 @@ await micropip.install('${pkg}')
     }
 }
 
-// Function to run imery with YAML from editor
+// Function to run imery with aggregated YAML from editor
 async function runEditorPythonCode() {
     if (!pyodide) {
         console.error('Pyodide not loaded yet');
@@ -165,30 +170,26 @@ async function runEditorPythonCode() {
             },
         });
 
-        // Write the edited YAML to Pyodide's virtual filesystem
+        // Write the edited aggregated YAML to Pyodide's virtual filesystem
         const fs = pyodide.FS;
         const tempDir = '/tmp/imery_demo';
         fs.mkdirTree(tempDir);
-        fs.writeFile(`${tempDir}/${example.entry}`, yamlContent);
+        fs.writeFile(`${tempDir}/app.yaml`, yamlContent);
 
-        // Construct GitHub URL for the demo directory
-        const githubUrl = `https://raw.githubusercontent.com/zokrezyl/imery/main/${example.github_path}`;
-
-        // Run imery with --layouts-url pointing to GitHub and local temp file
+        // Run imery with the aggregated YAML (no imports needed since everything is inline)
         const pythonCode = `
 import sys
 sys.argv = [
     'imery',
-    '--layouts-url', '${githubUrl}',
     '--layouts-path', '${tempDir}',
-    '--main', '${example.entry.replace('.yaml', '')}'
+    '--main', 'app'
 ]
 
 from imery.app import main
 main()
 `;
 
-        console.log('Running imery with YAML from editor');
+        console.log('Running imery with aggregated YAML from editor');
         await pyodide.runPythonAsync(pythonCode);
 
     } catch (err) {

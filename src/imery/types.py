@@ -5,15 +5,11 @@ types shared both by frontend and backend
 from abc import ABC, abstractmethod
 from .result import Result, Ok
 from typing import Union, List, Dict, Any
-from stringcase import spinalcase
+from .stringcase import spinalcase
 
 from .logging import log
 
-from abc import ABC, abstractmethod
-from .result import Result, Ok
-
-import hashlib, os;
-from stringcase import spinalcase
+import hashlib, os
 import random, string; uid = ''.join(random.choices(string.ascii_lowercase + string.digits, k=10))
 
 def gen_uid_slow():

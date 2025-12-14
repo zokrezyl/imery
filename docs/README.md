@@ -122,65 +122,50 @@ The imery CLI (`--layouts-path`) tells the framework where to find YAML layouts.
 
 ## 🚀 GitHub Actions Pipeline
 
-The `.github/workflows/deploy-pyodide-demo.yml` workflow automates building and deploying the demo.
+The `.github/workflows/deploy-pyodide-demo.yml` workflow deploys the demo to GitHub Pages.
 
 ### Pipeline Steps
 
 ```mermaid
 graph TD
     A[Push to main] --> B[Checkout code]
-    B --> C[Setup Python 3.13]
-    C --> D[Install uv]
-    D --> E[Build imery wheel]
-    E --> F[Download Pyodide distribution]
-    F --> G[Copy imery wheel to docs/pyodide_dist/]
-    G --> H[Upload docs/ as Pages artifact]
-    H --> I[Deploy to GitHub Pages]
+    B --> C[Upload docs/ as Pages artifact]
+    C --> D[Deploy to GitHub Pages]
 ```
 
 ### Detailed Workflow
 
 1. **Trigger**: On push to `main` branch or manual workflow dispatch
 
-2. **Build imery wheel**:
-   ```bash
-   uv build  # Creates dist/imery-*.whl
-   ```
-
-3. **Setup Pyodide environment**:
-   - Download Pyodide 0.26.1 distribution (includes Python interpreter + stdlib)
-   - Extract to `docs/pyodide_dist/`
-   - Copy imery wheel to `docs/pyodide_dist/`
-
-4. **Deploy to GitHub Pages**:
-   - Upload entire `docs/` directory as artifact
+2. **Deploy to GitHub Pages**:
+   - Upload `docs/` directory as artifact
    - Deploy to GitHub Pages environment
 
 ### Why This Approach?
 
-- **No Pyodide in Git**: `pyodide_dist/` is ~200MB, too large for git
-- **Fresh Builds**: Each deployment gets the latest imery code
-- **Automated**: Push to main → automatic demo update
+- **Simple**: Just static files, no build step
+- **Fast**: No wheel building or Pyodide downloading
+- **CDN-Powered**: Pyodide loaded from jsdelivr CDN
+- **PyPI-Based**: Imery installed from PyPI via micropip
+- **Aggressive Caching**: CDN and browser cache everything efficiently
 
 ## 🔧 JavaScript Module Breakdown
 
 ### `pyodide_loader.js`
 
-Initializes Pyodide and loads Python packages:
+Initializes Pyodide from CDN and installs packages from PyPI:
 
 ```javascript
-// Load Pyodide
-const pyodide = await loadPyodide({
-    indexURL: 'pyodide_dist/'
-});
+// Load Pyodide from CDN (loaded via script tag in index.html)
+const pyodide = await loadPyodide();
 
-// Install packages
+// Install packages from PyPI via micropip
 await pyodide.loadPackage(['numpy', 'pillow']);
 
-// Load imery wheel
+// Install imery from PyPI
 await pyodide.runPythonAsync(`
     import micropip
-    await micropip.install('emfs:/pyodide_dist/imery-0.0.3-py3-none-any.whl')
+    await micropip.install('imery')
 `);
 ```
 
@@ -296,38 +281,11 @@ You can't just open `index.html` in a browser due to CORS restrictions. Run a lo
 ```bash
 # From the docs/ directory
 python3 -m http.server 8000
-
-# Or use the justfile from imgui_bundle reference:
-python3 ../../ci_scripts/webserver_multithread_policy.py -p 8005
 ```
 
 Then visit: `http://localhost:8000`
 
-### Building Pyodide Distribution Locally
-
-For local testing with the full Pyodide setup:
-
-```bash
-# Build imery wheel
-make build
-
-# Create pyodide_dist directory (git-ignored)
-mkdir -p docs/pyodide_dist
-
-# Download Pyodide
-cd docs/pyodide_dist
-wget https://github.com/pyodide/pyodide/releases/download/0.26.1/pyodide-0.26.1.tar.bz2
-tar -xjf pyodide-0.26.1.tar.bz2
-mv pyodide/* .
-rm -rf pyodide pyodide-0.26.1.tar.bz2
-
-# Copy imery wheel
-cp ../../dist/imery-*.whl .
-
-# Start server
-cd ..
-python3 -m http.server 8000
-```
+**Note**: The demo will install imery from PyPI, so make sure your latest changes are published to PyPI first if you want to test them.
 
 ## 📝 Adding New Examples
 

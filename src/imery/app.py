@@ -35,7 +35,13 @@ def handle_error(err):
 @click.option('--layouts-path', '-p',
               envvar='IMERY_LAYOUTS_PATH',
               type=str,
-              help='Colon-separated list of directories to search for layout modules')
+              multiple=True,
+              help='Colon-separated list of directories to search for layout modules (can be specified multiple times)')
+@click.option('--layouts-url', '-u',
+              envvar='IMERY_LAYOUTS_URL',
+              type=str,
+              multiple=True,
+              help='URL to download layouts from (can be specified multiple times, e.g., GitHub raw URLs)')
 @click.option('--providers-path',
               envvar='IMERY_PROVIDERS_PATH',
               type=str,
@@ -49,16 +55,26 @@ def handle_error(err):
               type=str,
               help='Name of the main module to load')
 
-def main(layouts_path, providers_path, widgets_path, main):
+def main(layouts_path, layouts_url, providers_path, widgets_path, main):
     """Imery application runner"""
     global main_widget, factory, dispatcher, kernel, data_tree
 
-    # Parse search paths
-    if layouts_path:
-        layouts_paths = layouts_path.split(':')
-    else:
-        layouts_paths = ['.']
+    # Combine layouts_path and layouts_url in order of specification
+    # Both can be specified multiple times, precedence is order of appearance
+    layouts_paths = []
 
+    # Process --layouts-path (can be multiple, each colon-separated)
+    if layouts_path:
+        for path_spec in layouts_path:
+            layouts_paths.extend(path_spec.split(':'))
+
+    # Process --layouts-url (can be multiple)
+    if layouts_url:
+        layouts_paths.extend(layouts_url)
+
+    # Default to current directory if nothing specified
+    if not layouts_paths:
+        layouts_paths = ['.']
 
     # Create Lang and load modules
     lang_res = Lang.create(layouts_paths=layouts_paths)
