@@ -66,6 +66,11 @@ runButton.addEventListener('click', runEditorPythonCode);
 // Then, initialize everything
 // =====================================
 async function initialize() {
+    // Wait for loadPyodide to be available from CDN
+    while (typeof loadPyodide === 'undefined') {
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
+
     await loadPyodideAndPackages();
     await passCanvasToPyodide();
     // Load examples after Pyodide is ready
