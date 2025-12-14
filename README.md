@@ -57,6 +57,10 @@ That's it. No Python code, no compilation - just a YAML file describing what you
 - **Game developers** prototyping UI and tools
 - **Anyone** who wants to experiment with ImGui without writing code
 
+## Framework or Library?
+
+Both. Imery provides structure and patterns (like a framework) but you can use it flexibly, picking what you need (like a library). Use it however it serves you best.
+
 ## Project Status
 
 ⚠️ **Early Alpha** - Imery is experimental. APIs will change, features are incomplete, and breaking changes should be expected. We welcome feedback and contributions!
