@@ -68,6 +68,8 @@ runButton.addEventListener('click', runEditorPythonCode);
 async function initialize() {
     await loadPyodideAndPackages();
     await passCanvasToPyodide();
+    // Load examples after Pyodide is ready
+    await initializeExampleSelector();
 }
 
 initialize();

@@ -1,7 +1,5 @@
 // js/examples.js
-// Handles loading YAML demos from GitHub and populating the example selector
-
-const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/zokrezyl/imery/main/';
+// Handles loading aggregated YAML demos from the imery package
 
 // Load initial example
 async function loadInitialExample() {
@@ -38,19 +36,26 @@ async function fetchExampleMetadata() {
     }
 }
 
-// Load example YAML from GitHub
+// Load aggregated YAML from the imery package
 async function loadExample(example) {
     try {
-        // Fetch app.yaml from GitHub
-        const url = `${GITHUB_RAW_BASE}${example.github_path}/${example.entry}`;
-        console.log(`Loading example from: ${url}`);
-
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+        // Wait for Pyodide to be ready
+        if (!window.pyodide) {
+            displayError('Pyodide is still loading. Please wait...');
+            return;
         }
 
-        const yamlContent = await response.text();
+        console.log(`Loading aggregated example: ${example.aggregated_file}`);
+
+        // Read the aggregated YAML file from the imery package
+        const yamlContent = await window.pyodide.runPythonAsync(`
+import importlib.resources
+import imery.demo_aggregated
+
+# Read the aggregated YAML file
+yaml_path = importlib.resources.files('imery.demo_aggregated') / '${example.aggregated_file}'
+yaml_path.read_text()
+`);
 
         // Set editor content
         editor.setValue(yamlContent);
@@ -61,7 +66,7 @@ async function loadExample(example) {
         clearError();
     } catch (error) {
         console.error('Error loading example:', error);
-        displayError(`Failed to load example from GitHub: ${error.message}`);
+        displayError(`Failed to load example from package: ${error.message}`);
     }
 }
 
@@ -88,8 +93,8 @@ async function populateExampleSelector() {
     }
 }
 
-// Initialize on page load
-document.addEventListener('DOMContentLoaded', async () => {
+// Initialize example selector after Pyodide loads
+async function initializeExampleSelector() {
     // Populate selector
     await populateExampleSelector();
 
@@ -107,4 +112,4 @@ document.addEventListener('DOMContentLoaded', async () => {
             await loadExample(example);
         }
     });
-});
+}

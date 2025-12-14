@@ -134,7 +134,7 @@ await micropip.install('${pkg}')
     }
 }
 
-// Function to run imery with YAML from editor
+// Function to run imery with aggregated YAML from editor
 async function runEditorPythonCode() {
     if (!pyodide) {
         console.error('Pyodide not loaded yet');
@@ -165,30 +165,26 @@ async function runEditorPythonCode() {
             },
         });
 
-        // Write the edited YAML to Pyodide's virtual filesystem
+        // Write the edited aggregated YAML to Pyodide's virtual filesystem
         const fs = pyodide.FS;
         const tempDir = '/tmp/imery_demo';
         fs.mkdirTree(tempDir);
-        fs.writeFile(`${tempDir}/${example.entry}`, yamlContent);
+        fs.writeFile(`${tempDir}/app.yaml`, yamlContent);
 
-        // Construct GitHub URL for the demo directory
-        const githubUrl = `https://raw.githubusercontent.com/zokrezyl/imery/main/${example.github_path}`;
-
-        // Run imery with --layouts-url pointing to GitHub and local temp file
+        // Run imery with the aggregated YAML (no imports needed since everything is inline)
         const pythonCode = `
 import sys
 sys.argv = [
     'imery',
-    '--layouts-url', '${githubUrl}',
     '--layouts-path', '${tempDir}',
-    '--main', '${example.entry.replace('.yaml', '')}'
+    '--main', 'app'
 ]
 
 from imery.app import main
 main()
 `;
 
-        console.log('Running imery with YAML from editor');
+        console.log('Running imery with aggregated YAML from editor');
         await pyodide.runPythonAsync(pythonCode);
 
     } catch (err) {
