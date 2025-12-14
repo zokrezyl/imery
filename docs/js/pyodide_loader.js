@@ -83,9 +83,9 @@ async function loadPyodideAndPackages() {
             'pillow',
             'typing_extensions',
 
-            // ImGui Bundle (WASM wheel from traineq.org)
-            // -------------------------------------------
-            'https://traineq.org/imgui_bundle_online/projects/imgui_bundle_playground/pyodide_dist/imgui_bundle-1.92.4-cp312-cp312-pyodide_2024_0_wasm32.whl',
+            // ImGui Bundle (Pyodide-compatible, installed via micropip)
+            // ----------------------------------------------------------
+            'imgui_bundle',
 
             // Imery (from PyPI)
             // -----------------
