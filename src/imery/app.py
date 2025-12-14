@@ -128,6 +128,11 @@ def main(layouts_path, layouts_url, providers_path, widgets_path, main):
         click.echo("Error: app.data not specified", err=True)
         return 1
 
+    # Prepend main module namespace if widget_name doesn't have one
+    # (composite widgets do this automatically, but app entry point needs it too)
+    if '.' not in widget_name:
+        widget_name = f"{main}.{widget_name}"
+
     # Get data definition
     data_definitions = lang.data_definitions
     if data_name not in data_definitions:
