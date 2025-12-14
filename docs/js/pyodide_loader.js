@@ -71,24 +71,7 @@ async function loadPyodideAndPackages() {
         // SDL support in Pyodide is experimental. The flag is used to bypass certain issues.
         pyodide._api._skip_unwind_fatal_error = true;
 
-        // Determine the base URL dynamically
-        const baseUrl = `${window.location.origin}${window.location.pathname}`;
-        console.log('Base URL:', baseUrl);
-
-        // Load imery wheel filename from manifest
-        let imeryWheel = null;
-        try {
-            const manifestResponse = await fetch(baseUrl + 'pyodide_dist/manifest.json');
-            const manifest = await manifestResponse.json();
-            imeryWheel = baseUrl + 'pyodide_dist/' + manifest.imery_wheel;
-            console.log('Imery wheel:', imeryWheel);
-        } catch (e) {
-            console.error('Failed to load manifest, falling back to default wheel name:', e);
-            // Fallback to current version
-            imeryWheel = baseUrl + 'pyodide_dist/imery-0.0.3-py3-none-any.whl';
-        }
-
-        // List of packages to install
+        // List of packages to install from PyPI
         const packages = [
             // Core Python packages
             // --------------------
@@ -104,10 +87,10 @@ async function loadPyodideAndPackages() {
             // ------------
             'imgui_bundle',
 
-            // Imery (local wheel built by CI)
-            // --------------------------------
-            imeryWheel,
-        ].filter(pkg => pkg !== null);
+            // Imery (from PyPI)
+            // -----------------
+            'imery',
+        ];
 
         const totalSteps = packages.length;
         let currentStep = 1;
