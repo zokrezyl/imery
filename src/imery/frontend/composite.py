@@ -279,10 +279,21 @@ class Composite(Widget):
             res = self._init_children()
             if not res:
                 return Result.error(f"Composite: _init_children failed", res)
+
+        # Push styles before rendering children
+        res = self._push_styles()
+        if not res:
+            self._handle_error(Result.error("Composite: _push_styles failed", res))
+
         for child in self._children:
             res = child.render()
             if not res:
                 self._handle_error(Result.error(f"Composite: child render failed", res))
+
+        # Pop styles after rendering children
+        res = self._pop_styles()
+        if not res:
+            self._handle_error(Result.error("Composite: _pop_styles failed", res))
 
         return self._render_errors()
 

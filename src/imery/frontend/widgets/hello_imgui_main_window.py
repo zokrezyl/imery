@@ -58,22 +58,16 @@ class HelloImguiMainWindow(Composite):
     def _render_menu_bar(self):
         """Render the menu bar"""
         if self._menu_bar_widget:
-            res = self._menu_bar_widget.render()
-            if not res:
-                imgui.text_colored(imgui.ImVec4(1.0, 0.0, 0.0, 1.0), f"Menu bar render error: {res}")
+            self._handle_error(self._menu_bar_widget.render())
 
     def _main_loop(self):
         """Main rendering loop called by hello_imgui"""
         imgui.text("Main loop is running!")
         # Render non-docking widgets (regular widgets in main dock space)
         for widget in self._non_docking_widgets:
-            try:
-                res = widget.render()
-            except Exception as e:
-                sys.exit(1)
-            if not res:
-                imgui.text_colored(imgui.ImVec4(1.0, 0.0, 0.0, 1.0), f"Render Error: {res}")
-                sys.exit(1)
+            self._handle_error(widget.render())
+
+        self._render_errors()
 
     def _resolve_constant(self, field_name: str, value: str):
         """Convert YAML constant to Python constant
@@ -135,31 +129,34 @@ class HelloImguiMainWindow(Composite):
             return 1
         children = res.unwrapped
 
-        # Extract children by type
-        self._docking_splits = []
-        self._dockable_windows = []
         self._non_docking_widgets = []
         self._menu_bar_widget = None
-        self._menu_widget = None
-        self._app_menu_items_widget = None
+        # Extract children by type
+        docking_splits = []
+        dockable_windows = []
+        menu_widget = None
+        app_menu_items_widget = None
 
         for child in children:
             if isinstance(child, DockingSplit):
-                self._docking_splits.append(child)
+                docking_splits.append(child)
             elif isinstance(child, DockableWindow):
-                self._dockable_windows.append(child)
+                dockable_windows.append(child)
             elif isinstance(child, MainMenuBar):
                 if self._menu_bar_widget is not None:
-                    return Result.error("HelloImguiMainWindow: multiple MainMenuBar widgets found, only one allowed")
-                self._menu_bar_widget = child
+                    self._handle_error(Result.error("HelloImguiMainWindow: multiple MainMenuBar widgets found, only one allowed"))
+                else:
+                    self._menu_bar_widget = child
             elif child.__class__.__name__ == "HelloImguiMenu":
-                if self._menu_widget is not None:
-                    return Result.error("HelloImguiMainWindow: multiple HelloImguiMenu widgets found, only one allowed")
-                self._menu_widget = child
+                if menu_widget is not None:
+                    self._handle_error(Result.error("HelloImguiMainWindow: multiple HelloImguiMenu widgets found, only one allowed"))
+                else:
+                    menu_widget = child
             elif child.__class__.__name__ == "HelloImguiAppMenuItems":
-                if self._app_menu_items_widget is not None:
-                    return Result.error("HelloImguiMainWindow: multiple HelloImguiAppMenuItems widgets found, only one allowed")
-                self._app_menu_items_widget = child
+                if app_menu_items_widget is not None:
+                    self._handle_error(Result.error("HelloImguiMainWindow: multiple HelloImguiAppMenuItems widgets found, only one allowed"))
+                else:
+                    app_menu_items_widget = child
             else:
                 # Other widgets render in main loop
                 self._non_docking_widgets.append(child)
@@ -187,19 +184,25 @@ class HelloImguiMainWindow(Composite):
         # Fallback to old fields if not in runner-params
         res = self._field_values.get("label", self.uid)
         if not res:
-            return Result.error("HelloImguiMainWindow: failed to get label", res)
+            self._handle_error(Result.error("HelloImguiMainWindow: failed to get label", res))
+            label = "error: LABEL NOT AVAILABLE"
+        else:
+            label = res.unwrapped
         if 'app_window_params' not in params_dict:
-            runner_params.app_window_params.window_title = res.unwrapped
+            runner_params.app_window_params.window_title = label
 
         res = self._field_values.get("window-size", [1200, 800])
         if not res:
-            return Result.error("HelloImguiMainWindow: failed to get window-size", res)
-        size_list = res.unwrapped
+            self._handle_error(Result.error("HelloImguiMainWindow: failed to get window-size", res))
+            size_list = [1200, 800]
+        else:
+            size_list = res.unwrapped
+
         if 'app_window_params' not in params_dict:
             runner_params.app_window_params.window_geometry.size = (size_list[0], size_list[1])
 
         # If we have dockable windows or docking splits, enable docking
-        if self._dockable_windows or self._docking_splits:
+        if dockable_windows or docking_splits:
             runner_params.imgui_window_params.default_imgui_window_type = (
                 hello_imgui.DefaultImGuiWindowType.provide_full_screen_dock_space
             )
@@ -211,10 +214,10 @@ class HelloImguiMainWindow(Composite):
             docking_params.layout_condition = hello_imgui.DockingLayoutCondition.application_start
 
             # Add docking splits
-            docking_params.docking_splits = [split_widget.docking_split for split_widget in self._docking_splits]
+            docking_params.docking_splits = [split_widget.docking_split for split_widget in docking_splits]
 
             # Add dockable windows
-            docking_params.dockable_windows = [window_widget.dockable_window for window_widget in self._dockable_windows]
+            docking_params.dockable_windows = [window_widget.dockable_window for window_widget in dockable_windows]
 
             # Assign the complete DockingParams to runner_params
             runner_params.docking_params = docking_params
@@ -231,17 +234,20 @@ class HelloImguiMainWindow(Composite):
             runner_params.callbacks.show_menus = self._render_menu_bar
 
         # Set HelloImGui menu callbacks
-        if self._menu_widget:
+        if menu_widget:
             runner_params.imgui_window_params.show_menu_bar = True
-            runner_params.callbacks.show_menus = lambda: self._menu_widget.render()
+            runner_params.callbacks.show_menus = lambda: menu_widget.render()
 
-        if self._app_menu_items_widget:
-            runner_params.callbacks.show_app_menu_items = lambda: self._app_menu_items_widget.render()
+        if app_menu_items_widget:
+            runner_params.callbacks.show_app_menu_items = lambda: app_menu_items_widget.render()
 
         res = self._field_values.get("fps-idle", 0)
         if not res:
-            Result.error("HelloImguiMainWindow: failed to get 'fps-idle'")
-        runner_params.fps_idling.fps_idle = res.unwrapped
+            self._handle_error(Result.error("HelloImguiMainWindow: failed to get 'fps-idle'"))
+            idle = 0
+        else:
+            idle = res.unwrapped
+        runner_params.fps_idling.fps_idle = idle
 
         # Run application
         hello_imgui.run(runner_params)

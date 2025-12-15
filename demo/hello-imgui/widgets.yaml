@@ -504,7 +504,7 @@ widgets:
               on-hover:
                 show: metadata-tooltip
               data-map:
-                selection: "/kernel-tree/selection"
+                selection: "/kernel-tree/node-selection"
               style-mapping:
                 openable:
                   text: [0.2, 0.8, 0.2, 1.0]
@@ -537,13 +537,13 @@ widgets:
           body:
             - implot-layer:
                 label: "Sine"
-              data-id: /kernel/providers/waveform/available/sine/0
+              data-id: /kernel/providers/waveform-st/available/sine/0
             - implot-layer:
                 label: "Square"
-              data-id: /kernel/providers/waveform/available/square/0
+              data-id: /kernel/providers/waveform-st/available/square/0
             - implot-layer:
                 label: "Triangle"
-              data-id: /kernel/providers/waveform/available/triangle/0
+              data-id: /kernel/providers/waveform-st/available/triangle/0
 
   table-demo-popup:
     type: popup

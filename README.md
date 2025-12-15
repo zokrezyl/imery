@@ -88,7 +88,10 @@ imery --layouts-path demo/hello-imgui-full --main app
 
 ## Documentation
 
-Coming soon. For now, explore the examples and YAML files in the demo directories.
+- [Imery Lang Reference](docs/imery-lang.md) - YAML syntax and widget reference
+- [Design Overview](docs/design/main.md) - Architecture and design patterns
+
+For more examples, explore the YAML files in the demo directories.
 
 ## How It Works
 

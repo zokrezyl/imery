@@ -192,7 +192,8 @@ class DynamicAudioRingBuffer(DynamicAudioBuffer):
         if new_length == self._buffer_size:
             return
 
-        with self._lock:  # Blocking lock for resize
+        self.lock()
+        try:
             old_length = self._buffer_size
             old_physical = self._physical_size
             old_ptr = self._ptr
@@ -224,6 +225,8 @@ class DynamicAudioRingBuffer(DynamicAudioBuffer):
 
             # Reset wrap flag (new cycle starts)
             self._has_wrapped = False
+        finally:
+            self.unlock()
 
 
     def set_sample_rate(self, sample_rate: int):
@@ -246,7 +249,8 @@ class DynamicAudioRingBuffer(DynamicAudioBuffer):
         Args:
             data: Numpy array of samples (1D array for single channel)
         """
-        with self._lock:  # Provider must acquire (blocking)
+        self.lock()
+        try:
             n = len(data)  # Number of samples
 
             # Write if active and not frozen
@@ -276,6 +280,8 @@ class DynamicAudioRingBuffer(DynamicAudioBuffer):
 
             # Advance pointer
             self._ptr += n
+        finally:
+            self.unlock()
 
 
     @property
@@ -314,9 +320,12 @@ class DynamicAudioRingBuffer(DynamicAudioBuffer):
 
     def close(self):
         """Close buffer and free resources."""
-        with self._lock:
+        self.lock()
+        try:
             self._buffer = None
             self._active = False
+        finally:
+            self.unlock()
 
     def dispose(self):
         self.close()
@@ -540,6 +549,9 @@ class DynamicAudioBufferMediator(AudioBufferMediator):
         if not self._mediated_buffers or len(self._mediated_buffers) == 1:
             if hasattr(self._backend, 'activate'):
                 self._backend.activate()
+
+        # Resize source buffer to accommodate new consumer
+        self._resize_source_if_needed()
 
         return Ok(mediated_buffer)
 

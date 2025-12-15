@@ -883,7 +883,7 @@ widgets:
                 return _render_error_simple(Result.error("Widget: _render_errors: failed to create SimpleDataTree from errors", errors).as_tree)
 
             error_tree = res.unwrapped
-            res = self._factory.create_widget("builtin.tree-view", error_tree, DataPath("/"))
+            res = self._factory.create_widget("builtin.error-tree-view", error_tree, DataPath("/"))
             if not res:
                 errors = self._errors.copy()
                 errors.append(res)
