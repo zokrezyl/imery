@@ -16,4 +16,11 @@ widgets:
     type: composite
     style:
       text: [1.0, 0.3, 0.3, 1.0]
-    body: builtin.tree-view
+      border: [1.0, 0.3, 0.3, 1.0]
+    body:
+      - child:
+          border: true
+          flags:
+            - auto-resize-x
+            - auto-resize-y
+          body: builtin.tree-view

@@ -520,7 +520,7 @@ widgets:
       - same-line
       - text:
           data-map:
-            label: /kernel-tree/selection
+            label: /kernel-tree/node-selection
           style:
             text: [0.2, 1.0, 0.2, 1.0]
       - separator

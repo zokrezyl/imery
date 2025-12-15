@@ -504,7 +504,7 @@ widgets:
               on-hover:
                 show: metadata-tooltip
               data-map:
-                selection: "/kernel-tree/selection"
+                selection: "/kernel-tree/node-selection"
               style-mapping:
                 openable:
                   text: [0.2, 0.8, 0.2, 1.0]

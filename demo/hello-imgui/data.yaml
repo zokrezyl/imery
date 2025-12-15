@@ -2,7 +2,7 @@ data:
   demo-data:
     metadata:
       label: "Imery Docking Demo"
-      data-selection: None
+      node-selection: None
     children:
       kernel: $kernel
       sine:
