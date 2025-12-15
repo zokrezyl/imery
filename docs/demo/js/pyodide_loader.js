@@ -105,8 +105,10 @@ import micropip
 import sys
 print(f"Python version: {sys.version}")
 print(f"Installing imery (forcing latest)...")
-# Force reinstall to get latest version from PyPI
-await micropip.install('imery', keep_going=True, deps=True)
+# Install from TestPyPI (comment out for production PyPI)
+await micropip.install('imery', index_urls=['https://test.pypi.org/simple/', 'https://pypi.org/simple/'], keep_going=True, deps=True)
+# Install from PyPI (uncomment for production)
+# await micropip.install('imery', keep_going=True, deps=True)
 import imery
 print(f"imery version: {imery.__version__ if hasattr(imery, '__version__') else 'unknown'}")
 `
