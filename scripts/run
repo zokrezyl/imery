@@ -1,0 +1,18 @@
+#!/bin/sh
+# Wrapper script to run Python files with project root in PYTHONPATH
+
+# Find git root directory
+GIT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+
+if [ -z "$GIT_ROOT" ]; then
+    echo "Error: Not in a git repository" >&2
+    exit 1
+fi
+
+# Add git root to PYTHONPATH
+export PYTHONPATH="$GIT_ROOT/src:$PYTHONPATH"
+
+echo $PYTHONPATH
+# Run the provided command with uv
+# exec vglrun uv run "$@"
+exec uv run "$@"
