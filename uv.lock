@@ -272,7 +272,7 @@ wheels = [
 
 [[package]]
 name = "imery"
-version = "0.0.28"
+version = "0.0.29"
 source = { editable = "." }
 dependencies = [
     { name = "click" },
@@ -281,11 +281,12 @@ dependencies = [
     { name = "munch" },
     { name = "pillow" },
     { name = "pyyaml" },
-    { name = "soundfile" },
-    { name = "twine" },
 ]
 
 [package.optional-dependencies]
+audio = [
+    { name = "soundfile" },
+]
 dev = [
     { name = "pytest" },
     { name = "twine" },
@@ -305,11 +306,10 @@ requires-dist = [
     { name = "pillow", specifier = ">=11.3.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=9.0.2" },
     { name = "pyyaml", specifier = ">=6.0.2" },
-    { name = "soundfile", specifier = ">=0.13.1" },
-    { name = "twine", specifier = ">=6.2.0" },
+    { name = "soundfile", marker = "extra == 'audio'", specifier = ">=0.13.1" },
     { name = "twine", marker = "extra == 'dev'", specifier = ">=6.2.0" },
 ]
-provides-extras = ["dev"]
+provides-extras = ["audio", "dev"]
 
 [package.metadata.requires-dev]
 dev = [{ name = "twine", specifier = ">=6.2.0" }]
