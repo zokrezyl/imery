@@ -48,19 +48,19 @@ widgets:
                 body:
                   - implot-layer:
                       label: "Sine"
-                    data-id: /kernel/providers/waveform/available/sine/0
+                    data-id: /kernel/providers/waveform-st/available/sine/0
             - implot:
                 label: "Square Wave"
                 body:
                   - implot-layer:
                       label: "Square"
-                    data-id: /kernel/providers/waveform/available/square/0
+                    data-id: /kernel/providers/waveform-st/available/square/0
             - implot:
                 label: "Triangle Wave"
                 body:
                   - implot-layer:
                       label: "Triangle"
-                    data-id: /kernel/providers/waveform/available/triangle/0
+                    data-id: /kernel/providers/waveform-st/available/triangle/0
 
   # ============================================================================
   # LOGS VIEW for dockable window

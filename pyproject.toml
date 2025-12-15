@@ -15,6 +15,7 @@ dependencies = [
     "munch>=4.0.0",
     "pillow>=11.3.0",
     "pyyaml>=6.0.2",
+    "soundfile>=0.13.1",
     "twine>=6.2.0",
 ]
 
