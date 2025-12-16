@@ -13,7 +13,7 @@ class Selectable(Widget):
     """Selectable widget"""
 
     def _pre_render_head(self) -> Result[None]:
-        if not self._data_path:
+        if not self._data_bag._main_data_path:
             return Result.error("Selectable requires path (id)")
 
         # Get value using field_values

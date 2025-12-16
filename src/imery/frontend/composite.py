@@ -73,13 +73,14 @@ class Composite(Widget):
         """Create all child widgets from body"""
         # Extract body from params
         self._children = []
-        if isinstance(self._static, dict) and "body" in self._static:
-            body = self._static["body"]
-        elif isinstance(self._static, list):
-            body = self._static
+        static = self._data_bag._static
+        if isinstance(static, dict) and "body" in static:
+            body = static["body"]
+        elif isinstance(static, list):
+            body = static
         else:
-            pprint.pp(self._static)
-            return Result.error(f"Composite params must be dict with 'body' or list, got {type(self._static)}, {self._static}")
+            pprint.pp(static)
+            return Result.error(f"Composite params must be dict with 'body' or list, got {type(static)}, {static}")
 
         # Normalize body to always be a list (handle collapsed forms)
         if isinstance(body, str):
@@ -114,9 +115,10 @@ class Composite(Widget):
                     return Result.error(f"Composite foreach-key body must be string, dict, or list, got {type(foreach_body)}")
 
                 # Get metadata at current path
-                metadata_res = self._tree_like.get_metadata(self._data_path)
+                data_path = self._data_bag._main_data_path
+                metadata_res = self._data_bag.get_metadata()
                 if not metadata_res:
-                    return Result.error(f"Composite: foreach-key failed to get metadata at path '{self._data_path}'", metadata_res)
+                    return Result.error(f"Composite: foreach-key failed to get metadata at path '{data_path}'", metadata_res)
 
                 metadata = metadata_res.unwrapped
 
@@ -150,7 +152,8 @@ class Composite(Widget):
                             full_widget_name = widget_name
 
                         # Create widget at current path (not child path!)
-                        res = self._factory.create_widget(full_widget_name, self._tree_like, self._data_path, widget_params)
+                        tree_like = self._data_bag._main_data_tree
+                        res = self._factory.create_widget(full_widget_name, tree_like, data_path, widget_params)
                         if not res:
                             return Result.error(f"Composite: foreach-key failed to create widget '{widget_name}'", res)
 
@@ -184,15 +187,17 @@ class Composite(Widget):
                     return Result.error(f"Composite foreach body must be string, dict, or list, got {type(foreach_body)}")
 
                 # Get children at current path
-                res = self._tree_like.get_children_names(self._data_path)
+                tree_like = self._data_bag._main_data_tree
+                data_path = self._data_bag._main_data_path
+                res = tree_like.get_children_names(data_path)
                 if not res:
-                    return Result.error(f"Composite: foreach failed to get children at path '{self._data_path}'", res)
+                    return Result.error(f"Composite: foreach failed to get children at path '{data_path}'", res)
 
                 child_names = res.unwrapped
 
                 # For each child, create the foreach body widgets
                 for child_name in child_names:
-                    child_path = self._data_path / child_name
+                    child_path = data_path / child_name
 
                     # Create each widget in the foreach body at child_path
                     for widget_spec in foreach_widgets:
@@ -214,7 +219,7 @@ class Composite(Widget):
                             full_widget_name = widget_name
 
                         # Create widget at child_path
-                        res = self._factory.create_widget(full_widget_name, self._tree_like, child_path, widget_params)
+                        res = self._factory.create_widget(full_widget_name, tree_like, child_path, widget_params)
                         if not res:
                             return Result.error(f"Composite: foreach failed to create widget '{widget_name}' at '{child_path}'", res)
 
@@ -227,18 +232,20 @@ class Composite(Widget):
                 continue
 
             # Handle string format: "separator", "same-line"
+            tree_like = self._data_bag._main_data_tree
+            data_path = self._data_bag._main_data_path
             if isinstance(item, str):
                 widget_name = item
                 params = None
-                child_path = self._data_path
+                child_path = data_path
             # Handle dict format: {"text": "label"} or {"data-id": "foo", "text": "label"}
             elif isinstance(item, dict):
                 # Extract data-id if present
                 child_data_id = item.get("data-id")
                 if child_data_id is None:
-                    child_path = self._data_path
+                    child_path = data_path
                 else:
-                    child_path = self._data_path / child_data_id
+                    child_path = data_path / child_data_id
 
                 # Extract widget name and params (excluding data-id)
                 widget_keys = [k for k in item.keys() if k != "data-id"]
@@ -258,7 +265,7 @@ class Composite(Widget):
                 full_widget_name = widget_name
 
             # Create single child widget via factory
-            res = self._factory.create_widget(full_widget_name, self._tree_like, child_path, params)
+            res = self._factory.create_widget(full_widget_name, tree_like, child_path, params)
             if not res:
                 return Result.error(f"Composite: failed to create child widget '{widget_name}'", res)
 

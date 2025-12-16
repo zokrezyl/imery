@@ -74,11 +74,11 @@ class SameLine(Widget):
 class Combo(Widget):
     """Combo box widget"""
     # TODO ... implement this as similar to other tree like using imgui.begin_combo("combo 1", combo_preview_value, static.flags):
-    # similar to 
+    # similar to
 
 
     def _pre_render_head(self) -> Result[None]:
-        if not self._data_path:
+        if not self._data_bag._main_data_path:
             return Result.error("Combo requires path (id)")
 
         # Get value using field_values
@@ -113,7 +113,7 @@ class Checkbox(Widget):
 
 
     def _pre_render_head(self) -> Result[None]:
-        if not self._data_path:
+        if not self._data_bag._main_data_path:
             return Result.error("Checkbox requires path (id)")
 
         # Get value using field_values
@@ -138,7 +138,7 @@ class RadioButton(Widget):
     """Radio button widget"""
 
     def _pre_render_head(self) -> Result[None]:
-        if not self._data_path:
+        if not self._data_bag._main_data_path:
             return Result.error("RadioButton requires path (id)")
 
         # Get current value from data

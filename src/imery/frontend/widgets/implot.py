@@ -22,8 +22,10 @@ class ImplotLayer(Widget):
     def _pre_render_head(self) -> Result[bool]:
         """Render plot layer - renders line plot from data"""
         # Get buffer from metadata
-        if not self._metadata:
-            return Result.error("ImplotLayer: no metadata available")
+        metadata_res = self._data_bag.get_metadata()
+        if not metadata_res:
+            return Result.error("ImplotLayer: no metadata available", metadata_res)
+        metadata = metadata_res.unwrapped
 
         # Use cached buffer if available
         if self._cached_buffer is not None:
@@ -45,13 +47,15 @@ class ImplotLayer(Widget):
                 openable = capabilities.get("openable")
                 if category == "audio-channel" and openable:
                     # This is an openable channel - need to call open() ONCE to get buffer
-                    if not self._tree_like:
+                    tree_like = self._data_bag._main_data_tree
+                    data_path = self._data_bag._main_data_path
+                    if not tree_like:
                         return Result.error("ImplotLayer: no tree_like available for opening channel")
 
                     # Open the channel to get the buffer
-                    res = self._tree_like.open(self._data_path, {})
+                    res = tree_like.open(data_path, {})
                     if not res:
-                        return Result.error(f"ImplotLayer: failed to open channel at '{self._data_path}'", res)
+                        return Result.error(f"ImplotLayer: failed to open channel at '{data_path}'", res)
 
                     buffer = res.unwrapped
                     self._cached_buffer = buffer  # Cache it!
@@ -60,9 +64,10 @@ class ImplotLayer(Widget):
 
             else:
                 # Legacy: buffer directly in metadata
-                buffer = self._metadata.get("buffer")
+                buffer = metadata.get("buffer")
                 if not buffer:
-                    return Result.error(f"ImplotLayer: no buffer in metadata and not an openable channel ({self._data_path})")
+                    data_path = self._data_bag._main_data_path
+                    return Result.error(f"ImplotLayer: no buffer in metadata and not an openable channel ({data_path})")
                 self._cached_buffer = buffer  # Cache it!
 
         # Try to lock buffer

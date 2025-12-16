@@ -17,7 +17,7 @@ class InputText(Widget):
     """Text input widget"""
 
     def _pre_render_head(self) -> Result[None]:
-        if not self._data_path:
+        if not self._data_bag._main_data_path:
             return Result.error("InputText requires path (id)")
 
         # Get value using field_values
@@ -42,7 +42,8 @@ class InputInt(Widget):
     """Integer input widget"""
 
     def _pre_render_head(self) -> Result[None]:
-        if not self._data_path:
+        data_path = self._data_bag._main_data_path
+        if not data_path:
             return Result.error("InputInt requires path (id)")
 
         # Get value using field_values
@@ -55,7 +56,7 @@ class InputInt(Widget):
         try:
             int_value = int(value)
         except (ValueError, TypeError) as e:
-            return Result.error(f"InputInt: invalid integer value '{value}' at path '{self._data_path}'")
+            return Result.error(f"InputInt: invalid integer value '{value}' at path '{data_path}'")
 
         imgui_id = f"###{self.uid}"
 
@@ -73,7 +74,8 @@ class InputFloat(Widget):
     """Float input widget"""
 
     def _pre_render_head(self) -> Result[None]:
-        if not self._data_path:
+        data_path = self._data_bag._main_data_path
+        if not data_path:
             return Result.error("InputFloat requires path (id)")
 
         # Get value using field_values
@@ -86,7 +88,7 @@ class InputFloat(Widget):
         try:
             float_value = float(value)
         except (ValueError, TypeError) as e:
-            return Result.error(f"InputFloat: invalid float value '{value}' at path '{self._data_path}'")
+            return Result.error(f"InputFloat: invalid float value '{value}' at path '{data_path}'")
 
         imgui_id = f"###{self.uid}"
 
@@ -104,7 +106,7 @@ class SliderInt(Widget):
     """Integer slider widget"""
 
     def _pre_render_head(self) -> Result[None]:
-        if not self._data_path:
+        if not self._data_bag._main_data_path:
             return Result.error("SliderInt requires path (id)")
 
         # Get value using field_values
@@ -176,7 +178,7 @@ class SliderFloat(Widget):
     """Float slider widget"""
 
     def _pre_render_head(self) -> Result[None]:
-        if not self._data_path:
+        if not self._data_bag._main_data_path:
             return Result.error("SliderFloat requires path (id)")
 
         # Get value using field_values

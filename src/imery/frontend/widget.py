@@ -68,7 +68,6 @@ class Widget(Visual, EventHandler):
         self._data_bag = data_bag
         self._style_color_count = 0
         self._style_var_count = 0
-        self._metadata = None
         self._event_handlers = {}  # event_name -> list of command specs (lazy evaluated)
         self._body = None  # Body widget created from activated event
         self._is_body_activated = False
@@ -112,29 +111,10 @@ class Widget(Visual, EventHandler):
             if not res:
                 Result.error("Widget: body: could not create body")
 
-    @property
-    def field_values(self) -> DataBag:
-        """Return data_bag for backward compatibility with code using field_values"""
-        return self._data_bag
-
-    @property
-    def _static(self):
-        """Return static values from data_bag"""
-        return self._data_bag._static if self._data_bag else None
-
-    @property
-    def _data_path(self):
-        """Return main data path from data_bag"""
-        return self._data_bag._main_data_path if self._data_bag else None
-
-    @property
-    def _tree_like(self):
-        """Return main data tree from data_bag for backward compatibility"""
-        return self._data_bag._main_data_tree if self._data_bag else None
-
     def _init_events(self) -> Result[None]:
         """Parse and store event specifications from static"""
-        if not isinstance(self._static, dict):
+        static = self._data_bag._static
+        if not isinstance(static, dict):
             return Ok(None)
 
         # List of supported event names
@@ -142,7 +122,7 @@ class Widget(Visual, EventHandler):
 
         # Check each event in params
         for event_name in event_names:
-            event_spec = self._static.get(event_name)
+            event_spec = static.get(event_name)
             if event_spec is not None:
                 res = self._normalize_event_spec(event_name, event_spec)
                 if not res:
@@ -340,10 +320,11 @@ widgets:
 
         # Get target path (optional data-id, supports ".." for parent)
         data_id = data.get("data-id")
+        data_path = self._data_bag._main_data_path
         if data_id:
-            target_path = self._data_path / data_id
+            target_path = data_path / data_id
         else:
-            target_path = self._data_path
+            target_path = data_path
 
         # Call add_child through field_values
         res = self._data_bag.add_child(target_path, child_name, child_data)
@@ -383,7 +364,9 @@ widgets:
             # Check condition if present
             if "when" in cmd_spec:
                 condition = cmd_spec["when"]
-                if self._metadata and not self._evaluate_condition(condition, self._metadata):
+                metadata_res = self._data_bag.get_metadata()
+                metadata = metadata_res.unwrapped if metadata_res else None
+                if metadata and not self._evaluate_condition(condition, metadata):
                     continue  # Condition not met, skip this command
             if "command" not in cmd_spec:
                 return Result.error(f"'command' key not found in cmd_spec: {cmd_spec}")
@@ -438,7 +421,7 @@ widgets:
             if action == "default":
                 # Default action: for "click" events, set "selected" field
                 if event_name == "on-click":
-                    set_res = self._data_bag.set("selection", str(self._data_path))
+                    set_res = self._data_bag.set("selection", str(self._data_bag._main_data_path))
                     if not set_res:
                         return Result.error(f"default action failed to set selected", set_res)
                 # For other events, default does nothing
@@ -475,10 +458,11 @@ widgets:
 
                 # Get target path (optional data-id, supports ".." for parent)
                 data_id = cmd_spec.get("data-id")
+                data_path = self._data_bag._main_data_path
                 if data_id:
-                    target_path = self._data_path / data_id
+                    target_path = data_path / data_id
                 else:
-                    target_path = self._data_path
+                    target_path = data_path
 
                 # Call add_child through field_values
                 res = self._data_bag.add_child(target_path, child_name, child_data)
@@ -502,8 +486,9 @@ widgets:
         Returns:
             Result[Widget]: Created widget instance
         """
+        tree_like = self._data_bag._main_data_tree
+        data_path = self._data_bag._main_data_path
 
-        print("Widget: _create_widget_from_spec", widget_spec)
         # String → widget reference
         if isinstance(widget_spec, str):
             widget_name = widget_spec
@@ -511,41 +496,22 @@ widgets:
                 full_widget_name = f"{self._namespace}.{widget_name}"
             else:
                 full_widget_name = widget_spec
-            return self._factory.create_widget(full_widget_name, self._tree_like, self._data_path)
+            return self._factory.create_widget(full_widget_name, tree_like, data_path)
 
         # Dict or list → composite - use factory to avoid circular import
         if isinstance(widget_spec, (dict, list)):
-            print("Widget: _create_widget_from_spec 2", widget_spec)
             params = {"type": "composite", "body": [widget_spec] if isinstance(widget_spec, dict) else widget_spec}
             # Use full widget name with namespace to preserve context
             full_widget_name = f"{self._namespace}.composite" if self._namespace else "composite"
-            res = self._factory.create_widget(full_widget_name, self._tree_like, self._data_path, params)
+            res = self._factory.create_widget(full_widget_name, tree_like, data_path, params)
             if not res:
-                print("ERROR", res)
                 return Result.error("Widget: _create_widget_from_spec: could not create widget", res)
-            else:
-                print("OK!", res.unwrapped)
-                return Ok(res.unwrapped)
+            return Ok(res.unwrapped)
 
         return Result.error(f"Invalid widget spec type: {type(widget_spec)}")
 
     def _prepare_render(self) -> Result[None]:
-        """Prepare for rendering: load metadata and label"""
-        # Get metadata first if we have a data tree
-        if self._tree_like:
-            # Determine metadata path: path / data-id if data-id present, otherwise path
-            if isinstance(self._static, dict) and "data-id" in self._static:
-                metadata_path = self._data_path / self._static["data-id"]
-            else:
-                metadata_path = self._data_path
-
-            # Get metadata
-            res = self._tree_like.get_metadata(metadata_path)
-            if not res:
-                return Result.error(f"_prepare_render: failed to get metadata at path '{metadata_path}'", res)
-            self._metadata = res.unwrapped
-
-
+        """Prepare for rendering - metadata is now accessed through DataBag"""
         return Ok(None)
 
     def _apply_style_dict(self, style_dict: dict) -> Result[None]:
@@ -595,19 +561,22 @@ widgets:
 
     def _push_styles(self) -> Result[None]:
         """Push styles before rendering"""
-        if not isinstance(self._static, dict):
+        static = self._data_bag._static
+        if not isinstance(static, dict):
             return Ok(None)
 
         # Apply default style first
-        style = self._static.get("style")
+        style = static.get("style")
         if style and isinstance(style, dict):
             res = self._apply_style_dict(style)
             if not res:
                 return Result.error("_push_styles: failed to apply default style", res)
 
         # Apply style-mapping based on metadata conditions
-        style_mapping = self._static.get("style-mapping")
-        if style_mapping and self._metadata:
+        style_mapping = static.get("style-mapping")
+        metadata_res = self._data_bag.get_metadata()
+        metadata = metadata_res.unwrapped if metadata_res else None
+        if style_mapping and metadata:
             # style-mapping can be:
             # 1. Dict (old format): {field_name: style_dict, ...} - backward compatible
             # 2. List (new format): [{when: condition, style: style_dict}, ...]
@@ -619,7 +588,7 @@ widgets:
                     condition = {field_name: True}
 
                     # Evaluate condition
-                    if self._evaluate_condition(condition, self._metadata):
+                    if self._evaluate_condition(condition, metadata):
                         # Apply the style for this condition
                         if isinstance(field_style, dict):
                             res = self._apply_style_dict(field_style)
@@ -639,7 +608,7 @@ widgets:
                         continue
 
                     # Evaluate condition
-                    if self._evaluate_condition(condition, self._metadata):
+                    if self._evaluate_condition(condition, metadata):
                         # Apply the style
                         if isinstance(entry_style, dict):
                             res = self._apply_style_dict(entry_style)
@@ -681,8 +650,9 @@ widgets:
 
     def _ensure_body(self) -> Result[None]:
         # print("Widget: _ensure_body")
-        if isinstance(self._static, dict) and "body" in self._static and self._body is None:
-            activated_spec = self._static["body"]
+        static = self._data_bag._static
+        if isinstance(static, dict) and "body" in static and self._body is None:
+            activated_spec = static["body"]
             res = self._create_widget_from_spec(activated_spec)
             if not res:
                 return Result.error("_prepare_render: failed to create activated widget", res)

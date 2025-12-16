@@ -395,7 +395,7 @@ class ColorEdit(Widget):
     """Color edit widget - RGBA color picker"""
 
     def _pre_render_head(self) -> Result[None]:
-        if not self._data_path:
+        if not self._data_bag._main_data_path:
             return Result.error("ColorEdit requires path (id)")
 
         # Get value using field_values
@@ -434,7 +434,7 @@ class ColorButton(Widget):
     """Color button widget - displays a color as a clickable button"""
 
     def _pre_render_head(self) -> Result[None]:
-        if not self._data_path:
+        if not self._data_bag._main_data_path:
             return Result.error("ColorButton requires path (id)")
 
         # Get value using field_values
