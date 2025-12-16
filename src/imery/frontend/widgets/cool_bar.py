@@ -23,13 +23,19 @@ class CoolBar(Widget):
 
         # Get params
         anchor_x = 0.5
-        anchor_y = 0.07
-        horizontal = True
+        res = self._handle_error(self._data_bag.get("anchor_x", anchor_x))
+        if res:
+            anchor_x = res.unwrapped
 
-        if isinstance(self._static, dict):
-            anchor_x = self._static.get("anchor_x", 0.5)
-            anchor_y = self._static.get("anchor_y", 0.07)
-            horizontal = self._static.get("horizontal", True)
+        anchor_y = 0.07
+        res = self._handle_error(self._data_bag.get("anchor_y", anchor_y))
+        if res:
+            anchor_y = res.unwrapped
+
+        horizontal = True
+        res = self._handle_error(self._data_bag.get("horizontal", horizontal))
+        if res:
+            horizontal = res.unwrapped
 
         # Create config
         cool_bar_config = im_cool_bar.ImCoolBarConfig()
@@ -71,8 +77,9 @@ class CoolBarItem(Widget):
         # Get image path from params
         # Use an image that exists in imgui_bundle assets by default
         image_path = "images/world.png"
-        if isinstance(self._static, dict):
-            image_path = self._static.get("image", image_path)
+        res = self._handle_error(self._data_bag.get("image", image_path))
+        if res:
+            image_path = res.unwrapped
 
         # Begin cool bar item
         if im_cool_bar.cool_bar_item():

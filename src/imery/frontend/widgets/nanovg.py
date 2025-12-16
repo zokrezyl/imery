@@ -27,10 +27,11 @@ class NanovgCanvas(Widget):
         )
 
         # Get size from params
-        width, height = 800, 600
-        if isinstance(self._static, dict):
-            size = self._static.get("size", [800, 600])
-            width, height = size[0], size[1]
+        size = [800, 600]
+        res = self._handle_error(self._data_bag.get("size", size))
+        if res:
+            size = res.unwrapped
+        width, height = size[0], size[1]
 
         # Create framebuffer
         nvg_image_flags = 0
@@ -53,8 +54,9 @@ class NanovgCanvas(Widget):
 
         # Get canvas type from params
         canvas_type = "demo"
-        if isinstance(self._static, dict):
-            canvas_type = self._static.get("type", "demo")
+        res = self._handle_error(self._data_bag.get("type", canvas_type))
+        if res:
+            canvas_type = res.unwrapped
 
         # Render to framebuffer based on type
         if canvas_type == "shapes":

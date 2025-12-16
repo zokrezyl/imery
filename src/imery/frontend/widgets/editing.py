@@ -113,13 +113,25 @@ class SliderInt(Widget):
             return Result.error(f"SliderInt: failed to get value", value_res)
         current_value = value_res.unwrapped
 
-        if not isinstance(self._static, dict):
-            return Result.error(f"SliderInt params must be dict, got {type(self._static)}")
+        minv = 0
+        res = self._handle_error(self._data_bag.get("min", minv))
+        if res:
+            minv = res.unwrapped
 
-        minv = self._static.get("min", 0)
-        maxv = self._static.get("max", 100)
-        scale = self._static.get("scale", "linear")
-        display_format = self._static.get("display-format", None)
+        maxv = 100
+        res = self._handle_error(self._data_bag.get("max", maxv))
+        if res:
+            maxv = res.unwrapped
+
+        scale = "linear"
+        res = self._handle_error(self._data_bag.get("scale", scale))
+        if res:
+            scale = res.unwrapped
+
+        display_format = None
+        res = self._handle_error(self._data_bag.get("display-format", display_format))
+        if res:
+            display_format = res.unwrapped
 
         if current_value is None or current_value == "":
             current_value = minv
@@ -173,11 +185,15 @@ class SliderFloat(Widget):
             return Result.error(f"SliderFloat: failed to get value", value_res)
         current_value = float(value_res.unwrapped)
 
-        if not isinstance(self._static, dict):
-            return Result.error(f"SliderFloat params must be dict, got {type(self._static)}")
+        minv = 0.0
+        res = self._handle_error(self._data_bag.get("min", minv))
+        if res:
+            minv = float(res.unwrapped)
 
-        minv = float(self._static.get("min", 0.0))
-        maxv = float(self._static.get("max", 1.0))
+        maxv = 1.0
+        res = self._handle_error(self._data_bag.get("max", maxv))
+        if res:
+            maxv = float(res.unwrapped)
 
         imgui_id = f"###{self.uid}"
 

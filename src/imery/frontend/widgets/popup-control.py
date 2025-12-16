@@ -17,10 +17,10 @@ class OpenPopup(Widget):
         return Ok(None)
 
     def _pre_render_head(self) -> Result[None]:
-        if not isinstance(self._static, dict):
-            return Result.error(f"OpenPopup params must be dict, got {type(self._static)}")
-
-        popup_id = self._static.get("id")
+        popup_id = None
+        res = self._handle_error(self._data_bag.get("id", popup_id))
+        if res:
+            popup_id = res.unwrapped
         if not popup_id:
             return Result.error("OpenPopup requires 'id' parameter")
 

@@ -21,14 +21,17 @@ class Table(Widget):
         label = label_res.unwrapped
 
         # Get number of columns from params
-        if not isinstance(self._static, dict):
-            return Result.error(f"Table params must be dict, got {type(self._static)}")
-
-        num_columns = self._static.get("columns", 1)
+        num_columns = 1
+        res = self._handle_error(self._data_bag.get("columns", num_columns))
+        if res:
+            num_columns = res.unwrapped
 
         # Get flags from params
         flags = imgui.TableFlags_.none
-        flags_list = self._static.get("flags", [])
+        flags_list = []
+        res = self._handle_error(self._data_bag.get("flags", flags_list))
+        if res:
+            flags_list = res.unwrapped
         for flag_name in flags_list:
             flag_attr = flag_name.replace("-", "_")
             if hasattr(imgui.TableFlags_, flag_attr):
@@ -53,17 +56,20 @@ class Row(Widget):
         """Advance to next row - sets _is_body_activated to render activated children"""
         # Get min height from params
         min_height = 0.0
-        if isinstance(self._static, dict):
-            min_height = self._static.get("min-height", 0.0)
+        res = self._handle_error(self._data_bag.get("min-height", min_height))
+        if res:
+            min_height = res.unwrapped
 
         # Get flags from params
         flags = imgui.TableRowFlags_.none
-        if isinstance(self._static, dict):
-            flags_list = self._static.get("flags", [])
-            for flag_name in flags_list:
-                flag_attr = flag_name.replace("-", "_")
-                if hasattr(imgui.TableRowFlags_, flag_attr):
-                    flags |= getattr(imgui.TableRowFlags_, flag_attr)
+        flags_list = []
+        res = self._handle_error(self._data_bag.get("flags", flags_list))
+        if res:
+            flags_list = res.unwrapped
+        for flag_name in flags_list:
+            flag_attr = flag_name.replace("-", "_")
+            if hasattr(imgui.TableRowFlags_, flag_attr):
+                flags |= getattr(imgui.TableRowFlags_, flag_attr)
 
         # Call table_next_row
         imgui.table_next_row(flags, min_height)

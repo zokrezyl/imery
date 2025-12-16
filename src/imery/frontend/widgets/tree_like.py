@@ -45,17 +45,24 @@ class Child(Widget):
 
         # Get params
         size = [0, 0]
-        border = False
-        flags = imgui.ChildFlags_.none
+        res = self._handle_error(self._data_bag.get("size", size))
+        if res:
+            size = res.unwrapped
 
-        if isinstance(self._static, dict):
-            size = self._static.get("size", [0, 0])
-            border = self._static.get("border", False)
-            flags_list = self._static.get("flags", [])
-            for flag_name in flags_list:
-                flag_attr = flag_name.replace("-", "_")
-                if hasattr(imgui.ChildFlags_, flag_attr):
-                    flags |= getattr(imgui.ChildFlags_, flag_attr)
+        border = False
+        res = self._handle_error(self._data_bag.get("border", border))
+        if res:
+            border = res.unwrapped
+
+        flags = imgui.ChildFlags_.none
+        flags_list = []
+        res = self._handle_error(self._data_bag.get("flags", flags_list))
+        if res:
+            flags_list = res.unwrapped
+        for flag_name in flags_list:
+            flag_attr = flag_name.replace("-", "_")
+            if hasattr(imgui.ChildFlags_, flag_attr):
+                flags |= getattr(imgui.ChildFlags_, flag_attr)
 
         child_opened = imgui.begin_child(f"{label}###{self.uid}", size, border, flags)
         self._is_body_activated = child_opened
@@ -74,13 +81,19 @@ class Columns(Widget):
     def _pre_render_head(self) -> Result[None]:
         """Begin columns"""
         count = 1
-        label = self.uid
-        border = True
+        res = self._handle_error(self._data_bag.get("count", count))
+        if res:
+            count = res.unwrapped
 
-        if isinstance(self._static, dict):
-            count = self._static.get("count", 1)
-            label = self._static.get("id", self.uid)
-            border = self._static.get("border", True)
+        label = self.uid
+        res = self._handle_error(self._data_bag.get("id", label))
+        if res:
+            label = res.unwrapped
+
+        border = True
+        res = self._handle_error(self._data_bag.get("border", border))
+        if res:
+            border = res.unwrapped
 
         imgui.columns(count, label, border)
         self._is_body_activated = True

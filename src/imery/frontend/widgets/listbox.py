@@ -22,11 +22,15 @@ class Listbox(Widget):
             return Result.error(f"Listbox: failed to get value", value_res)
         current_value = value_res.unwrapped
 
-        if not isinstance(self._static, dict):
-            return Result.error(f"Listbox params must be dict, got {type(self._static)}")
+        items = []
+        res = self._handle_error(self._data_bag.get("items", items))
+        if res:
+            items = res.unwrapped
 
-        items = self._static.get("items", [])
-        height = self._static.get("height", 4)
+        height = 4
+        res = self._handle_error(self._data_bag.get("height", height))
+        if res:
+            height = res.unwrapped
 
         try:
             idx = items.index(str(current_value))

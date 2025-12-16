@@ -19,11 +19,14 @@ class Imguizmo(Widget):
 
         # Get operation from params
         op_str = "translate"
-        mode_str = "local"
+        res = self._handle_error(self._data_bag.get("operation", op_str))
+        if res:
+            op_str = res.unwrapped
 
-        if isinstance(self._static, dict):
-            op_str = self._static.get("operation", "translate")
-            mode_str = self._static.get("mode", "local")
+        mode_str = "local"
+        res = self._handle_error(self._data_bag.get("mode", mode_str))
+        if res:
+            mode_str = res.unwrapped
 
         # Display gizmo info
         imgui.text(f"ImGuizmo: {op_str.upper()} ({mode_str} space)")

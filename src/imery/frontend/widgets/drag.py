@@ -28,12 +28,20 @@ class DragInt(Widget):
         except (ValueError, TypeError) as e:
             return Result.error(f"DragInt: invalid integer value '{value}' at path '{self._data_path}'")
 
-        if not isinstance(self._static, dict):
-            return Result.error(f"DragInt params must be dict, got {type(self._static)}")
+        minv = 0
+        res = self._handle_error(self._data_bag.get("min", minv))
+        if res:
+            minv = res.unwrapped
 
-        minv = self._static.get("min", 0)
-        maxv = self._static.get("max", 100)
-        speed = self._static.get("speed", 1.0)
+        maxv = 100
+        res = self._handle_error(self._data_bag.get("max", maxv))
+        if res:
+            maxv = res.unwrapped
+
+        speed = 1.0
+        res = self._handle_error(self._data_bag.get("speed", speed))
+        if res:
+            speed = res.unwrapped
 
         imgui_id = f"###{self.uid}"
 
@@ -66,12 +74,20 @@ class DragFloat(Widget):
         except (ValueError, TypeError) as e:
             return Result.error(f"DragFloat: invalid float value '{value}' at path '{self._data_path}'")
 
-        if not isinstance(self._static, dict):
-            return Result.error(f"DragFloat params must be dict, got {type(self._static)}")
+        minv = 0.0
+        res = self._handle_error(self._data_bag.get("min", minv))
+        if res:
+            minv = float(res.unwrapped)
 
-        minv = float(self._static.get("min", 0.0))
-        maxv = float(self._static.get("max", 1.0))
-        speed = float(self._static.get("speed", 0.01))
+        maxv = 1.0
+        res = self._handle_error(self._data_bag.get("max", maxv))
+        if res:
+            maxv = float(res.unwrapped)
+
+        speed = 0.01
+        res = self._handle_error(self._data_bag.get("speed", speed))
+        if res:
+            speed = float(res.unwrapped)
 
         imgui_id = f"###{self.uid}"
 

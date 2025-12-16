@@ -21,12 +21,19 @@ class SpinnerMovingDots(Widget):
             label = str(label_res) if not isinstance(label_res, str) else label_res
 
         radius = 20.0
+        res = self._handle_error(self._data_bag.get("radius", radius))
+        if res:
+            radius = res.unwrapped
+
         thickness = 4.0
+        res = self._handle_error(self._data_bag.get("thickness", thickness))
+        if res:
+            thickness = res.unwrapped
+
         num_balls = 20
-        if isinstance(self._static, dict):
-            radius = self._static.get("radius", 20.0)
-            thickness = self._static.get("thickness", 4.0)
-            num_balls = self._static.get("num_balls", 20)
+        res = self._handle_error(self._data_bag.get("num_balls", num_balls))
+        if res:
+            num_balls = res.unwrapped
 
         color = imgui.ImColor(0.3, 0.5, 0.9, 1.0)
         imspinner.spinner_moving_dots(label, radius, thickness, color, num_balls)
@@ -47,10 +54,14 @@ class SpinnerArcRotation(Widget):
             label = str(label_res) if not isinstance(label_res, str) else label_res
 
         radius = imgui.get_font_size() / 1.8
+        res = self._handle_error(self._data_bag.get("radius", radius))
+        if res:
+            radius = res.unwrapped
+
         thickness = 4.0
-        if isinstance(self._static, dict):
-            radius = self._static.get("radius", radius)
-            thickness = self._static.get("thickness", 4.0)
+        res = self._handle_error(self._data_bag.get("thickness", thickness))
+        if res:
+            thickness = res.unwrapped
 
         color = imgui.ImColor(0.3, 0.5, 0.9, 1.0)
         imspinner.spinner_arc_rotation(label, radius, thickness, color)
@@ -71,15 +82,24 @@ class SpinnerAngTriple(Widget):
             label = str(label_res) if not isinstance(label_res, str) else label_res
 
         radius1 = imgui.get_font_size() / 2.5
-        radius2 = radius1 * 1.5
-        radius3 = radius1 * 2.0
-        thickness = 2.5
+        res = self._handle_error(self._data_bag.get("radius1", radius1))
+        if res:
+            radius1 = res.unwrapped
 
-        if isinstance(self._static, dict):
-            radius1 = self._static.get("radius1", radius1)
-            radius2 = self._static.get("radius2", radius2)
-            radius3 = self._static.get("radius3", radius3)
-            thickness = self._static.get("thickness", 2.5)
+        radius2 = radius1 * 1.5
+        res = self._handle_error(self._data_bag.get("radius2", radius2))
+        if res:
+            radius2 = res.unwrapped
+
+        radius3 = radius1 * 2.0
+        res = self._handle_error(self._data_bag.get("radius3", radius3))
+        if res:
+            radius3 = res.unwrapped
+
+        thickness = 2.5
+        res = self._handle_error(self._data_bag.get("thickness", thickness))
+        if res:
+            thickness = res.unwrapped
 
         color = imgui.ImColor(0.3, 0.5, 0.9, 1.0)
         imspinner.spinner_ang_triple(label, radius1, radius2, radius3, thickness, color, color, color)

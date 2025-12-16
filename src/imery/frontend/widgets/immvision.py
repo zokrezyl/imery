@@ -64,11 +64,16 @@ class ImmvisionImageDisplay(Widget):
 
         # Load image if path provided
         self._image = None
-        if isinstance(self._static, dict):
-            image_path = self._static.get("image_path")
-            if image_path:
-                load_alpha = self._static.get("load_alpha", False)
-                self._image = _load_image(image_path, load_alpha)
+        image_path = None
+        res = self._handle_error(self._data_bag.get("image_path", image_path))
+        if res:
+            image_path = res.unwrapped
+        if image_path:
+            load_alpha = False
+            res = self._handle_error(self._data_bag.get("load_alpha", load_alpha))
+            if res:
+                load_alpha = res.unwrapped
+            self._image = _load_image(image_path, load_alpha)
 
         if self._image is None:
             # Create default test pattern
@@ -87,15 +92,17 @@ class ImmvisionImageDisplay(Widget):
 
         # Get size from params
         size = None
-        if isinstance(self._static, dict):
-            size_list = self._static.get("size")
-            if size_list:
-                size = (size_list[0], size_list[1])
+        size_list = None
+        res = self._handle_error(self._data_bag.get("size", size_list))
+        if res and res.unwrapped:
+            size_list = res.unwrapped
+            size = (size_list[0], size_list[1])
 
         # Get show_options from params
         show_options = False
-        if isinstance(self._static, dict):
-            show_options = self._static.get("show_options", False)
+        res = self._handle_error(self._data_bag.get("show_options", show_options))
+        if res:
+            show_options = res.unwrapped
 
         # Display image
         immvision.image_display(
@@ -123,19 +130,24 @@ class ImmvisionImageDisplayResizable(Widget):
             immvision.use_rgb_color_order()
 
         # Initialize size state
-        if isinstance(self._static, dict):
-            size_list = self._static.get("size", [0, int(hello_imgui.em_size(15))])
-            self._image_size = ImVec2(size_list[0], size_list[1])
-        else:
-            self._image_size = ImVec2(0, int(hello_imgui.em_size(15)))
+        size_list = [0, int(hello_imgui.em_size(15))]
+        res = self._handle_error(self._data_bag.get("size", size_list))
+        if res:
+            size_list = res.unwrapped
+        self._image_size = ImVec2(size_list[0], size_list[1])
 
         # Load image if path provided
         self._image = None
-        if isinstance(self._static, dict):
-            image_path = self._static.get("image_path")
-            if image_path:
-                load_alpha = self._static.get("load_alpha", False)
-                self._image = _load_image(image_path, load_alpha)
+        image_path = None
+        res = self._handle_error(self._data_bag.get("image_path", image_path))
+        if res:
+            image_path = res.unwrapped
+        if image_path:
+            load_alpha = False
+            res = self._handle_error(self._data_bag.get("load_alpha", load_alpha))
+            if res:
+                load_alpha = res.unwrapped
+            self._image = _load_image(image_path, load_alpha)
 
         if self._image is None:
             # Create default test pattern
@@ -181,17 +193,24 @@ class ImmvisionImage(Widget):
 
         # Load image if path provided
         self._image = None
-        if isinstance(self._static, dict):
-            image_path = self._static.get("image_path")
-            if image_path:
-                load_alpha = self._static.get("load_alpha", False)
-                self._image = _load_image(image_path, load_alpha)
+        image_path = None
+        res = self._handle_error(self._data_bag.get("image_path", image_path))
+        if res:
+            image_path = res.unwrapped
+        if image_path:
+            load_alpha = False
+            res = self._handle_error(self._data_bag.get("load_alpha", load_alpha))
+            if res:
+                load_alpha = res.unwrapped
+            self._image = _load_image(image_path, load_alpha)
 
-            # Set display size from params
-            size_list = self._static.get("size")
-            if size_list:
-                display_size = int(hello_imgui.em_size(size_list[0]))
-                self._image_params.image_display_size = (display_size, display_size)
+        # Set display size from params
+        size_list = None
+        res = self._handle_error(self._data_bag.get("size", size_list))
+        if res and res.unwrapped:
+            size_list = res.unwrapped
+            display_size = int(hello_imgui.em_size(size_list[0]))
+            self._image_params.image_display_size = (display_size, display_size)
 
         if self._image is None:
             # Create default test pattern with alpha

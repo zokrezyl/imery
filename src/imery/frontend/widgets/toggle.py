@@ -37,21 +37,38 @@ class Toggle(Widget):
         # Get style from params
         flags = 0
         config = None
-        if isinstance(self._static, dict):
-            style = self._static.get("style", "default")
-            animated = self._static.get("animated", False)
 
-            if animated:
-                flags = imgui_toggle.ToggleFlags_.animated.value
+        style = "default"
+        res = self._handle_error(self._data_bag.get("style", style))
+        if res:
+            style = res.unwrapped
 
-            if style == "material":
-                config = imgui_toggle.material_style()
-                if "animation_duration" in self._static:
-                    config.animation_duration = self._static["animation_duration"]
-            elif style == "ios":
-                size_scale = self._static.get("size_scale", 0.2)
-                light_mode = self._static.get("light_mode", False)
-                config = imgui_toggle.ios_style(size_scale=size_scale, light_mode=light_mode)
+        animated = False
+        res = self._handle_error(self._data_bag.get("animated", animated))
+        if res:
+            animated = res.unwrapped
+
+        if animated:
+            flags = imgui_toggle.ToggleFlags_.animated.value
+
+        if style == "material":
+            config = imgui_toggle.material_style()
+            animation_duration = None
+            res = self._handle_error(self._data_bag.get("animation_duration", animation_duration))
+            if res:
+                animation_duration = res.unwrapped
+            if animation_duration is not None:
+                config.animation_duration = animation_duration
+        elif style == "ios":
+            size_scale = 0.2
+            res = self._handle_error(self._data_bag.get("size_scale", size_scale))
+            if res:
+                size_scale = res.unwrapped
+            light_mode = False
+            res = self._handle_error(self._data_bag.get("light_mode", light_mode))
+            if res:
+                light_mode = res.unwrapped
+            config = imgui_toggle.ios_style(size_scale=size_scale, light_mode=light_mode)
 
         # Render toggle
         imgui_id = f"##{label}_{self.uid}"

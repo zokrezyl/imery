@@ -44,22 +44,15 @@ class TextEditor(Widget):
 
         # Get language from params
         language = "python"
-        if isinstance(self._static, dict):
-            language = self._static.get("language", "python")
+        res = self._handle_error(self._data_bag.get("language", language))
+        if res:
+            language = res.unwrapped
 
-            # Set language definition
-            if language == "python":
-                self._editor.set_language_definition(ed.TextEditor.LanguageDefinitionId.python)
-            elif language == "cpp" or language == "c++":
-                self._editor.set_language_definition(ed.TextEditor.LanguageDefinitionId.cpp)
-            elif language == "c":
-                self._editor.set_language_definition(ed.TextEditor.LanguageDefinitionId.c)
-            elif language == "sql":
-                self._editor.set_language_definition(ed.TextEditor.LanguageDefinitionId.sql)
-            elif language == "hlsl":
-                self._editor.set_language_definition(ed.TextEditor.LanguageDefinitionId.hlsl)
-            elif language == "lua":
-                self._editor.set_language_definition(ed.TextEditor.LanguageDefinitionId.lua)
+        # Set language definition
+        lang_id = getattr(ed.TextEditor.LanguageDefinitionId, language, None)
+        if not lang_id:
+            return Result.error(f"TextEditor: unknown language '{language}'")
+        self._editor.set_language_definition(lang_id)
 
         # Render the editor
         self._editor.render(f"##editor_{self.uid}")

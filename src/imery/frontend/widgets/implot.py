@@ -117,24 +117,6 @@ class Implot(Widget):
 class ImplotGroup(Widget):
     """ImPlot group widget - creates subplots context, renders plots from activated"""
 
-
-    def __init__(self, factory, dispatcher, namespace: str, data_bag):
-        super().__init__(factory, dispatcher, namespace, data_bag)
-        self._rows = 1
-        self._cols = 1
-        self._size = None
-    def init(self) -> Result[None]:
-        """Initialize subplot parameters"""
-        if isinstance(self._static, dict):
-            self._rows = self._static.get("rows", 1)
-            self._cols = self._static.get("cols", 1)
-            size = self._static.get("size")
-            if size:
-                self._size = (size[0], size[1])
-
-        return super().init()
-
-
     def _pre_render_head(self) -> Result[None]:
         """Begin subplots - sets _is_body_activated to render activated children"""
         res = self._data_bag.get("label")

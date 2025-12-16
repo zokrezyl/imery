@@ -31,10 +31,11 @@ class NodeEditor(Widget):
             label = "Node Editor"
 
         # Get size from params
-        size = ImVec2(800, 600)
-        if isinstance(self._static, dict):
-            size_list = self._static.get("size", [800, 600])
-            size = ImVec2(size_list[0], size_list[1])
+        size_list = [800, 600]
+        res = self._handle_error(self._data_bag.get("size", size_list))
+        if res:
+            size_list = res.unwrapped
+        size = ImVec2(size_list[0], size_list[1])
 
         # Set context and begin editor
         ed.set_current_editor(self._editor_context)
@@ -101,11 +102,12 @@ class NodePin(Widget):
             label = label_res
 
         pin_type = "input"
+        res = self._handle_error(self._data_bag.get("type", pin_type))
+        if res:
+            pin_type = res.unwrapped
         kind = ed.PinKind.input
-        if isinstance(self._static, dict):
-            pin_type = self._static.get("type", "input")
-            if pin_type == "output":
-                kind = ed.PinKind.output
+        if pin_type == "output":
+            kind = ed.PinKind.output
 
         # Create unique pin ID
         pin_id = ed.PinId(hash(f"pin_{self.uid}") & 0x7FFFFFFF)

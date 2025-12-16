@@ -87,10 +87,10 @@ class Combo(Widget):
             return Result.error(f"Combo: failed to get value", value_res)
         current_value = value_res.unwrapped
 
-        if not isinstance(self._static, dict):
-            return Result.error(f"Combo params must be dict, got {type(self._static)}")
-
-        items = self._static.get("items", [])
+        items = []
+        res = self._handle_error(self._data_bag.get("items", items))
+        if res:
+            items = res.unwrapped
 
         try:
             idx = items.index(str(current_value))
@@ -149,7 +149,10 @@ class RadioButton(Widget):
 
         # Get this radio button's value from params
         label_res = self._data_bag.get("label", "")
-        button_value = self._static.get("value")
+        button_value = None
+        res = self._handle_error(self._data_bag.get("value", button_value))
+        if res:
+            button_value = res.unwrapped
         if button_value is None:
             return Result.error("RadioButton requires 'value' parameter")
 

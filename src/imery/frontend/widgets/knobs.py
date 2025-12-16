@@ -30,32 +30,49 @@ class Knob(Widget):
 
         # Get params
         v_min = 0.0
+        res = self._handle_error(self._data_bag.get("min", v_min))
+        if res:
+            v_min = res.unwrapped
+
         v_max = 1.0
+        res = self._handle_error(self._data_bag.get("max", v_max))
+        if res:
+            v_max = res.unwrapped
+
         size = immapp.em_size() * 2.5
-        variant = imgui_knobs.ImGuiKnobVariant_.tick
+        res = self._handle_error(self._data_bag.get("size", size))
+        if res:
+            size = res.unwrapped
+
         format_str = "%.2f"
+        res = self._handle_error(self._data_bag.get("format", format_str))
+        if res:
+            format_str = res.unwrapped
+
         speed = 0
+        res = self._handle_error(self._data_bag.get("speed", speed))
+        if res:
+            speed = res.unwrapped
+
         steps = 100
+        res = self._handle_error(self._data_bag.get("steps", steps))
+        if res:
+            steps = res.unwrapped
 
-        if isinstance(self._static, dict):
-            v_min = self._static.get("min", 0.0)
-            v_max = self._static.get("max", 1.0)
-            size = self._static.get("size", size)
-            format_str = self._static.get("format", "%.2f")
-            speed = self._static.get("speed", 0)
-            steps = self._static.get("steps", 100)
-
-            variant_name = self._static.get("variant", "tick")
-            variant_map = {
-                "tick": imgui_knobs.ImGuiKnobVariant_.tick,
-                "dot": imgui_knobs.ImGuiKnobVariant_.dot,
-                "space": imgui_knobs.ImGuiKnobVariant_.space,
-                "stepped": imgui_knobs.ImGuiKnobVariant_.stepped,
-                "wiper": imgui_knobs.ImGuiKnobVariant_.wiper,
-                "wiper_dot": imgui_knobs.ImGuiKnobVariant_.wiper_dot,
-                "wiper_only": imgui_knobs.ImGuiKnobVariant_.wiper_only,
-            }
-            variant = variant_map.get(variant_name, imgui_knobs.ImGuiKnobVariant_.tick)
+        variant_name = "tick"
+        res = self._handle_error(self._data_bag.get("variant", variant_name))
+        if res:
+            variant_name = res.unwrapped
+        variant_map = {
+            "tick": imgui_knobs.ImGuiKnobVariant_.tick,
+            "dot": imgui_knobs.ImGuiKnobVariant_.dot,
+            "space": imgui_knobs.ImGuiKnobVariant_.space,
+            "stepped": imgui_knobs.ImGuiKnobVariant_.stepped,
+            "wiper": imgui_knobs.ImGuiKnobVariant_.wiper,
+            "wiper_dot": imgui_knobs.ImGuiKnobVariant_.wiper_dot,
+            "wiper_only": imgui_knobs.ImGuiKnobVariant_.wiper_only,
+        }
+        variant = variant_map.get(variant_name, imgui_knobs.ImGuiKnobVariant_.tick)
 
         # Render knob
         changed, new_value = imgui_knobs.knob(
@@ -102,32 +119,49 @@ class KnobInt(Widget):
 
         # Get params
         v_min = 0
+        res = self._handle_error(self._data_bag.get("min", v_min))
+        if res:
+            v_min = res.unwrapped
+
         v_max = 15
+        res = self._handle_error(self._data_bag.get("max", v_max))
+        if res:
+            v_max = res.unwrapped
+
         size = immapp.em_size() * 2.5
-        variant = imgui_knobs.ImGuiKnobVariant_.tick
+        res = self._handle_error(self._data_bag.get("size", size))
+        if res:
+            size = res.unwrapped
+
         format_str = "%02i"
+        res = self._handle_error(self._data_bag.get("format", format_str))
+        if res:
+            format_str = res.unwrapped
+
         speed = 0
+        res = self._handle_error(self._data_bag.get("speed", speed))
+        if res:
+            speed = res.unwrapped
+
         steps = 10
+        res = self._handle_error(self._data_bag.get("steps", steps))
+        if res:
+            steps = res.unwrapped
 
-        if isinstance(self._static, dict):
-            v_min = self._static.get("min", 0)
-            v_max = self._static.get("max", 15)
-            size = self._static.get("size", size)
-            format_str = self._static.get("format", "%02i")
-            speed = self._static.get("speed", 0)
-            steps = self._static.get("steps", 10)
-
-            variant_name = self._static.get("variant", "tick")
-            variant_map = {
-                "tick": imgui_knobs.ImGuiKnobVariant_.tick,
-                "dot": imgui_knobs.ImGuiKnobVariant_.dot,
-                "space": imgui_knobs.ImGuiKnobVariant_.space,
-                "stepped": imgui_knobs.ImGuiKnobVariant_.stepped,
-                "wiper": imgui_knobs.ImGuiKnobVariant_.wiper,
-                "wiper_dot": imgui_knobs.ImGuiKnobVariant_.wiper_dot,
-                "wiper_only": imgui_knobs.ImGuiKnobVariant_.wiper_only,
-            }
-            variant = variant_map.get(variant_name, imgui_knobs.ImGuiKnobVariant_.tick)
+        variant_name = "tick"
+        res = self._handle_error(self._data_bag.get("variant", variant_name))
+        if res:
+            variant_name = res.unwrapped
+        variant_map = {
+            "tick": imgui_knobs.ImGuiKnobVariant_.tick,
+            "dot": imgui_knobs.ImGuiKnobVariant_.dot,
+            "space": imgui_knobs.ImGuiKnobVariant_.space,
+            "stepped": imgui_knobs.ImGuiKnobVariant_.stepped,
+            "wiper": imgui_knobs.ImGuiKnobVariant_.wiper,
+            "wiper_dot": imgui_knobs.ImGuiKnobVariant_.wiper_dot,
+            "wiper_only": imgui_knobs.ImGuiKnobVariant_.wiper_only,
+        }
+        variant = variant_map.get(variant_name, imgui_knobs.ImGuiKnobVariant_.tick)
 
         # Render knob
         changed, new_value = imgui_knobs.knob_int(

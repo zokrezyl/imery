@@ -22,8 +22,9 @@ class Implot3d(Widget):
 
         # Get size from params
         size = [-1, -1]
-        if isinstance(self._static, dict):
-            size = self._static.get("size", [-1, -1])
+        res = self._handle_error(self._data_bag.get("size", size))
+        if res:
+            size = res.unwrapped
 
         plot_opened = implot3d.begin_plot(label, size)
         self._is_body_activated = plot_opened
