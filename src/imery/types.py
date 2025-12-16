@@ -335,3 +335,11 @@ class ActionHandler(ABC):
         """
         pass
 
+
+class DataBag(Object):
+    """ Abstraction used to pass data to the Widgets
+    It has a main TreeLike and secondary TreeLike instances specified in the layouts
+    """
+    def __init__(self):
+        pass
+
