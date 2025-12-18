@@ -2,7 +2,7 @@ import re
 from imery.types import DataPath, Object, EventHandler, TreeLike
 from imery.result import Result, Ok
 from imery.backend.data_tree import DataTree
-from typing import Optional, Dict, Any, Union
+from typing import Optional, Dict, Any, Union, List
 
 # Pattern for @ references: @path or $tree@path
 # Reference chars: alphanumeric, hyphen, underscore, slash, dot (for ..)
@@ -37,6 +37,10 @@ class DataBag(Object):
         }
 
     def init(self) -> Result[None]:
+        # Validate static type
+        if self._static is not None and not isinstance(self._static, (str, dict)):
+            return Result.error(f"DataBag.init: static must be None, str, or dict, got {type(self._static)}")
+
         # Lookup main data tree
         if self._data_trees and self._main_data_key:
             self._main_data_tree = self._data_trees.get(self._main_data_key)
@@ -154,6 +158,29 @@ class DataBag(Object):
 
         return Ok(res.unwrapped)
 
+    def get_static(self, key: str, default_value: Any = None) -> Result[Any]:
+        """
+        Get value strictly from static definition (not from data tree).
+        Used for structural fields like event-handlers, style, body, etc.
+
+        Args:
+            key: Field name
+            default_value: Default value if key not found
+
+        Returns:
+            Result with value from static, or default_value if not found
+        """
+        if self._static is None:
+            return Ok(default_value)
+
+        if isinstance(self._static, str):
+            # String shorthand (e.g., button: "Click me") - structural fields don't exist
+            return Ok(default_value)
+
+        # Dict - look up the key
+        value = self._static.get(key, default_value)
+        return Ok(value)
+
     def get(self, key: str, default_value: Any = None) -> Result[Any]:
         """
         Get field value - checks static first, then dynamic from main_data_tree metadata.
@@ -175,7 +202,17 @@ class DataBag(Object):
                 return Ok(value)
             # For other keys, fall through to tree_like lookup
 
-        # Check if key exists directly in static dict
+        # Check if key exists in "head" section (new structure)
+        if self._static and isinstance(self._static, dict):
+            head = self._static.get("head")
+            if head and isinstance(head, dict) and key in head:
+                value = head[key]
+                # Check if it's a reference
+                if self._is_reference(value):
+                    return self._resolve_reference(value)
+                return Ok(value)
+
+        # Check if key exists directly in static dict (backward compat and for id, etc.)
         if self._static and isinstance(self._static, dict) and key in self._static:
             value = self._static[key]
             # Check if it's a reference
@@ -211,14 +248,22 @@ class DataBag(Object):
         return the metadata view at current path
         """
         if self._main_data_tree is None:
-            return Ok(self._static.copy() if self._static is not None else None)
+            if self._static is None:
+                return Ok(None)
+            if isinstance(self._static, dict):
+                return Ok(self._static.copy())
+            if isinstance(self._static, str):
+                return Ok({"label": self._static})
+            return Ok(None)
 
         res = self._main_data_tree.get_metadata(self._main_data_path)
         if not res:
             return Result.error(f"DataBag.get_metadata: no data found at {self._main_data_path}", res)
         metadata = res.unwrapped.copy()
-        if self._static:
+        if self._static and isinstance(self._static, dict):
             metadata.update(self._static)
+        elif self._static and isinstance(self._static, str):
+            metadata["label"] = self._static
         return Ok(metadata)
 
     def set(self, key: str, value: Any) -> Result[None]:
@@ -298,6 +343,10 @@ class DataBag(Object):
         Returns:
             Result[None]
         """
+        print(f"DataBag.add_child: input data={data}")
+        print(f"DataBag.add_child: main_data_tree={self._main_data_tree}")
+        print(f"DataBag.add_child: main_data_path={self._main_data_path}")
+        print(f"DataBag.add_child: data_trees keys={list(self._data_trees.keys()) if self._data_trees else None}")
         if not self._main_data_tree:
             return Result.error(f"DataBag.add_child: no main_data_tree available")
 
@@ -343,8 +392,16 @@ class DataBag(Object):
         else:
             target_path = self._main_data_path
 
+        print(f"DataBag.add_child: resolved name={child_name}, metadata={child_metadata}, target_path={target_path}")
+
         res = self._main_data_tree.add_child(target_path, child_name, {"metadata": child_metadata})
         if not res:
             return Result.error(f"DataBag.add_child: failed at '{target_path}'", res)
 
         return Ok(None)
+
+    def get_children_names(self) -> Result[List[str]]:
+        """Get children names at current path from main data tree"""
+        if not self._main_data_tree:
+            return Ok([])
+        return self._main_data_tree.get_children_names(self._main_data_path)

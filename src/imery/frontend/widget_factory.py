@@ -197,18 +197,7 @@ class WidgetFactory(Object):
                 data_bag=data_bag
             )
         else:
-            # Old format: list (backward compatibility) - treat as composite body
-            if "composite" not in self._widget_cache:
-                return Result.error("Composite widget not found in cache")
-
-            composite_class = self._widget_cache["composite"]
-            data_bag = DataBag(data_trees, main_data_key, data_path, cached_item)
-            return composite_class.create(
-                factory=self,
-                dispatcher=self._dispatcher,
-                namespace=namespace,
-                data_bag=data_bag
-            )
+            return Result.error(f"WidgetFactory: cached_item must be a class or dict with 'type', got {type(cached_item)}")
 
     def dispose(self) -> Result[None]:
         return Ok(None)

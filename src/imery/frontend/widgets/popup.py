@@ -38,6 +38,7 @@ class Popup(Widget):
 
     def close(self) -> Result[None]:
         """Close the popup."""
+        print("Popup: close")
         imgui.close_current_popup()
         return Ok(None)
 

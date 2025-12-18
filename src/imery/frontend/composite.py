@@ -20,6 +20,7 @@ class Composite(Widget):
     def init(self) -> Result[None]:
         res = super().init()
         self._children: Optional[List] = None
+        self._last_children_names = None  # Track data tree children for refresh
         return res
 
 
@@ -27,19 +28,17 @@ class Composite(Widget):
     @property
     def is_empty(self) -> Result[bool]:
         """Check if composite has no children"""
-        if self._children is None:
-            res = self._init_children()
-            if not res:
-                return Result.error("could not init children")
+        res = self._ensure_children()
+        if not res:
+            return Result.error("could not init children")
         return len(self._children) == 0
 
     @property
     def children(self) -> Result[bool]:
         """Check if composite has no children"""
-        if self._children is None:
-            res = self._init_children()
-            if not res:
-                return Result.error("could not init children")
+        res = self._ensure_children()
+        if not res:
+            return Result.error("could not init children")
         return Ok(self._children)
 
     def _substitute_variables(self, spec, key, value):
@@ -69,18 +68,15 @@ class Composite(Widget):
             # Primitives (int, float, bool, None) - return as-is
             return spec
 
-    def _init_children(self) -> Result[None]:
+    def _ensure_children(self) -> Result[None]:
         """Create all child widgets from body"""
-        # Extract body from params
         self._children = []
-        static = self._data_bag._static
-        if isinstance(static, dict) and "body" in static:
-            body = static["body"]
-        elif isinstance(static, list):
-            body = static
-        else:
-            pprint.pp(static)
-            return Result.error(f"Composite params must be dict with 'body' or list, got {type(static)}, {static}")
+        res = self._data_bag.get_static("body")
+        if not res:
+            return Result.error("Composite: _ensure_children: failed to get body", res)
+        body = res.unwrapped
+        if body is None:
+            return Result.error("Composite: _ensure_children: body is required")
 
         # Normalize body to always be a list (handle collapsed forms)
         if isinstance(body, str):
@@ -290,10 +286,17 @@ class Composite(Widget):
 
     def render(self) -> Result[None]:
         """Render all children - Composite doesn't use head/body pattern"""
-        if self._children is None:
-            res = self._init_children()
+        # Check if data children changed (for foreach-child refresh)
+        res = self._data_bag.get_children_names()
+        current_names = tuple(res.unwrapped) if res and res.unwrapped else None
+        if self._children is None or (current_names is not None and current_names != self._last_children_names):
+            if self._children is not None:
+                for child in self._children:
+                    child.dispose()
+            res = self._ensure_children()
             if not res:
-                return Result.error(f"Composite: _init_children failed", res)
+                return Result.error(f"Composite: _ensure_children failed", res)
+            self._last_children_names = current_names
 
         # Push styles before rendering children
         res = self._push_styles()

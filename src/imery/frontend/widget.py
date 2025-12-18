@@ -82,6 +82,7 @@ class Widget(Visual, EventHandler):
         self._errors = []
 
         self._styles_pushed = False
+        self._dispatch_handlers = []  # List of on-dispatch handler specs
 
 
     def init(self) -> Result[None]:
@@ -112,22 +113,41 @@ class Widget(Visual, EventHandler):
                 Result.error("Widget: body: could not create body")
 
     def _init_events(self) -> Result[None]:
-        """Parse and store event specifications from static"""
-        static = self._data_bag._static
-        if not isinstance(static, dict):
-            return Ok(None)
+        """Parse and store event specifications from event-handlers section"""
+        # Get event-handlers section
+        res = self._data_bag.get_static("event-handlers", {})
+        if not res:
+            return Result.error("Widget: _init_events: failed to get event-handlers", res)
+        event_handlers = res.unwrapped
 
-        # List of supported event names
+        # List of supported event names (except on-dispatch which is handled separately)
         event_names = ["on-active", "on-click", "on-double-click", "on-right-click", "on-hover", "on-error"]
 
-        # Check each event in params
+        # Check each event in event-handlers
         for event_name in event_names:
-            event_spec = static.get(event_name)
+            event_spec = event_handlers.get(event_name)
             if event_spec is not None:
                 res = self._normalize_event_spec(event_name, event_spec)
                 if not res:
                     return Result.error("Widget: _init_events: Could not init events", res)
                 self._event_handlers[event_name] = res.unwrapped
+
+        # Handle on-dispatch separately - register with dispatcher
+        on_dispatch = event_handlers.get("on-dispatch")
+        if on_dispatch:
+            print(f"_init_events: on_dispatch={on_dispatch}")
+            if not isinstance(on_dispatch, list):
+                on_dispatch = [on_dispatch]
+            self._dispatch_handlers = on_dispatch
+            # Register with dispatcher for each source/name pair
+            for handler_spec in on_dispatch:
+                if isinstance(handler_spec, dict):
+                    source = handler_spec.get("source")
+                    name = handler_spec.get("name")
+                    if source and name:
+                        key = f"{source}/{name}"
+                        print(f"_init_events: registering handler for key={key}")
+                        self._dispatcher.register_event_handler(key, self)
 
         return Ok(None)
 
@@ -358,8 +378,27 @@ widgets:
 
 
     def _execute_event_command_dispatch_event(self, event_name: str, command: str, data: Optional[Union[str, dict, list]] = None) -> Result[None]:
-        print("Widget: _execute_event_command_dispatch_event")
-        return Result.error("Widget: _execute_event_command_dispatch_event: not implemented")
+        """Dispatch an event with source=widget id, name=data (event name)"""
+        print(f"dispatch-event: data={data}")
+        # Get widget id
+        res = self._data_bag.get_static("id")
+        if not res:
+            return Result.error("dispatch-event: failed to get widget id", res)
+        widget_id = res.unwrapped
+        print(f"dispatch-event: widget_id={widget_id}")
+        if not widget_id:
+            return Result.error("dispatch-event: widget must have 'id' to dispatch events")
+
+        # data is the event name (string)
+        if not isinstance(data, str):
+            return Result.error(f"dispatch-event: event name must be a string, got {type(data)}")
+
+        event = {
+            "source": widget_id,
+            "name": data
+        }
+        print(f"dispatch-event: dispatching {event}")
+        return self._dispatcher.dispatch_event(event)
 
     def _resolve_action_references(self, value: Any) -> Result[Any]:
         """
@@ -391,13 +430,16 @@ widgets:
 
     def _execute_event_command_add_data_child(self, event_name: str, command: str, data: Optional[Union[str, dict, list]] = None) -> Result[None]:
         """Handle add-data-child action - adds a new child node to the data tree."""
+        print(f"add-data-child: data={data}")
         if not isinstance(data, dict):
             return Result.error(f"add-data-child: expected dict, got '{type(data)}'")
 
         res = self._data_bag.add_child(data)
         if not res:
+            print(f"add-data-child: FAILED: {res}")
             return Result.error("add-data-child: failed", res)
 
+        print(f"add-data-child: SUCCESS")
         return Ok(None)
 
     def _execute_event_command_close(self, event_name: str, command: str, data: Optional[Union[str, dict, list]] = None) -> Result[None]:
@@ -685,19 +727,21 @@ widgets:
 
     def _push_styles(self) -> Result[None]:
         """Push styles before rendering"""
-        static = self._data_bag._static
-        if not isinstance(static, dict):
-            return Ok(None)
-
         # Apply default style first
-        style = static.get("style")
+        res = self._data_bag.get_static("style")
+        if not res:
+            return Result.error("_push_styles: failed to get style", res)
+        style = res.unwrapped
         if style and isinstance(style, dict):
             res = self._apply_style_dict(style)
             if not res:
                 return Result.error("_push_styles: failed to apply default style", res)
 
         # Apply style-mapping based on metadata conditions
-        style_mapping = static.get("style-mapping")
+        res = self._data_bag.get_static("style-mapping")
+        if not res:
+            return Result.error("_push_styles: failed to get style-mapping", res)
+        style_mapping = res.unwrapped
         metadata_res = self._data_bag.get_metadata()
         metadata = metadata_res.unwrapped if metadata_res else None
         if style_mapping and metadata:
@@ -773,13 +817,16 @@ widgets:
         return Ok(None)
 
     def _ensure_body(self) -> Result[None]:
-        # print("Widget: _ensure_body")
-        static = self._data_bag._static
-        if isinstance(static, dict) and "body" in static and self._body is None:
-            activated_spec = static["body"]
-            res = self._create_widget_from_spec(activated_spec)
+        if self._body is not None:
+            return Ok(None)
+        res = self._data_bag.get_static("body")
+        if not res:
+            return Result.error("_ensure_body: failed to get body", res)
+        body_spec = res.unwrapped
+        if body_spec is not None:
+            res = self._create_widget_from_spec(body_spec)
             if not res:
-                return Result.error("_prepare_render: failed to create activated widget", res)
+                return Result.error("_ensure_body: failed to create body widget", res)
             self._body = res.unwrapped
         return Ok(None)
 
@@ -944,5 +991,35 @@ widgets:
     def _close(self) -> Result[None]:
         return Result.error("Widget: _close: Not implemented")
 
-    def handle_event(self, event):
-        pass
+    def handle_event(self, event: dict) -> Result[None]:
+        """Handle dispatched events - called by dispatcher when event matches registered source/name"""
+        print(f"handle_event: event={event}, dispatch_handlers={self._dispatch_handlers}")
+        source = event.get("source")
+        name = event.get("name")
+
+        # Find matching handler in _dispatch_handlers
+        for handler_spec in self._dispatch_handlers:
+            if not isinstance(handler_spec, dict):
+                continue
+            if handler_spec.get("source") == source and handler_spec.get("name") == name:
+                # Found match - execute "do" actions
+                do_actions = handler_spec.get("do")
+                if do_actions:
+                    # Normalize to list
+                    if not isinstance(do_actions, list):
+                        do_actions = [do_actions]
+                    # Execute each action
+                    for action_spec in do_actions:
+                        res = self._normalize_event_spec_item("on-dispatch", action_spec)
+                        if not res:
+                            return Result.error("handle_event: failed to normalize action", res)
+                        cmd_spec = res.unwrapped
+                        command = cmd_spec.get("command")
+                        method_name = f"_execute_event_command_{command.replace('-', '_')}"
+                        method = getattr(self, method_name, None)
+                        if method is None:
+                            return Result.error(f"handle_event: unknown command '{command}'")
+                        res = method("on-dispatch", command, cmd_spec.get("data"))
+                        if not res:
+                            return Result.error(f"handle_event: '{command}' failed", res)
+        return Ok(None)
