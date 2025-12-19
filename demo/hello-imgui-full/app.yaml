@@ -23,7 +23,7 @@ import:
   - examples.long-text
   - examples.command-palette
   - examples.drag-and-drop
-  # - examples.matplotlib-demo
+  - examples.matplotlib-demo
   - examples.custom-background
   - examples.docking-demo
   - examples.implot-demo
@@ -268,10 +268,10 @@ widgets:
               body:
                 - examples.docking-demo.docking-demo:
 
-#          - collapsing-header:
-#              label: "Matplotlib"
-#              body:
-#                - examples.matplotlib-demo.matplotlib-demo:
+          - collapsing-header:
+              label: "Matplotlib"
+              body:
+                - examples.matplotlib-demo.matplotlib-demo:
 
     # 4. Implot [3D]
     - dockable-window:
