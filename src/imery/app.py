@@ -2,6 +2,7 @@
 Generic application runner for imery
 """
 
+import sys
 import click
 from pathlib import Path
 from imgui_bundle import imgui
@@ -25,10 +26,10 @@ data_tree = None
 
 
 def handle_error(err):
-    import sys
     import yaml
     print(yaml.dump(err.as_tree))
-    sys.exit(-1)
+    if sys.platform != 'emscripten':
+        sys.exit(-1)
 
 
 @click.command()
@@ -165,4 +166,8 @@ def main(layouts_path, layouts_url, providers_path, widgets_path, main):
 
 
 if __name__ == '__main__':
-    main()
+    if sys.platform == 'emscripten':
+        # In Pyodide/Emscripten, don't let Click call sys.exit()
+        main(standalone_mode=False)
+    else:
+        main()

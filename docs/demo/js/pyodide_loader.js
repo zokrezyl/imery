@@ -185,7 +185,7 @@ sys.argv = [
 ]
 
 from imery.app import main
-main()
+main(standalone_mode=False)
 `;
 
         console.log('Running imery with aggregated YAML from editor');
