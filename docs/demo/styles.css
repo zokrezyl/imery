@@ -106,12 +106,16 @@ html, body {
     padding: 10px;
     font-family: Consolas, monospace;
     font-size: 0.9em;
-    max-height: 150px;
+    min-height: 100px;
+    max-height: 50vh; /* Up to half the viewport height */
+    height: 200px; /* Default height */
     overflow-y: auto;
     /* Remove the display property to let the .hidden class control visibility */
     /* display: none; */
     white-space: pre-wrap; /* Preserve formatting */
     position: relative;
+    resize: vertical; /* Allow vertical resizing by dragging */
+    flex-shrink: 0; /* Don't shrink when editor grows */
 }
 
 /* Close button for error output */

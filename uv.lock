@@ -388,7 +388,7 @@ wheels = [
 
 [[package]]
 name = "imery"
-version = "0.0.54"
+version = "0.0.55"
 source = { editable = "." }
 dependencies = [
     { name = "click" },
