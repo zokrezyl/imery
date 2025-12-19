@@ -177,7 +177,9 @@ class CustomBuildHook(BuildHookInterface):
         if self.target_name != "wheel":
             return
 
-        print("Running YAML aggregation before wheel build...")
+        # Get actual package version from metadata
+        package_version = self.metadata.version
+        print(f"Running YAML aggregation before wheel build (version {package_version})...")
 
         # Create aggregated demo directory
         aggregated_dir = Path("demo-aggregated")
@@ -227,10 +229,10 @@ class CustomBuildHook(BuildHookInterface):
         examples_json_path = aggregated_dir / "examples.json"
         with open(examples_json_path, 'w') as f:
             json.dump({
-                "version": version,
+                "version": package_version,
                 "examples": examples
             }, f, indent=2)
             f.write('\n')
 
         print(f"Successfully aggregated {aggregated_count} demo files")
-        print(f"Generated {examples_json_path} with {len(examples)} examples (version {version})")
+        print(f"Generated {examples_json_path} with {len(examples)} examples (version {package_version})")
