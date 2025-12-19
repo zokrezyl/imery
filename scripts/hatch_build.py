@@ -170,36 +170,14 @@ class YAMLAggregator:
 
 
 class CustomBuildHook(BuildHookInterface):
-    """Build hook that aggregates YAML demo files and updates version in Pyodide loader."""
-
-    def _update_pyodide_version(self, version):
-        """Update IMERY_VERSION in pyodide_loader.js."""
-        import re
-        loader_path = Path("docs/demo/js/pyodide_loader.js")
-        if not loader_path.exists():
-            print(f"  Warning: {loader_path} not found, skipping version update")
-            return
-
-        content = loader_path.read_text()
-        new_content = re.sub(
-            r'const IMERY_VERSION = "[^"]+";',
-            f'const IMERY_VERSION = "{version}";',
-            content
-        )
-        loader_path.write_text(new_content)
-        print(f"Updated {loader_path} with version {version}")
+    """Build hook that aggregates YAML demo files."""
 
     def initialize(self, version, build_data):
         """Run before building."""
-        package_version = self.metadata.version
-
-        # During SDIST build, update pyodide_loader.js with version
-        if self.target_name == "sdist":
-            self._update_pyodide_version(package_version)
-            return
-
         if self.target_name != "wheel":
             return
+
+        package_version = self.metadata.version
 
         print(f"Running YAML aggregation before wheel build (version {package_version})...")
 

@@ -77,6 +77,24 @@ def update_pyproject_toml(new_version):
     print(f"✅ Updated pyproject.toml")
 
 
+def update_pyodide_loader(new_version):
+    """Update IMERY_VERSION in pyodide_loader.js"""
+    loader_file = Path("docs/demo/js/pyodide_loader.js")
+
+    if not loader_file.exists():
+        print("⚠️  pyodide_loader.js not found, skipping")
+        return
+
+    content = loader_file.read_text()
+    new_content = re.sub(
+        r'const IMERY_VERSION = "[^"]+";',
+        f'const IMERY_VERSION = "{new_version}";',
+        content
+    )
+    loader_file.write_text(new_content)
+    print(f"✅ Updated pyodide_loader.js")
+
+
 def update_changelog(new_version):
     """Add new version section to CHANGELOG.md"""
     changelog_file = Path("CHANGELOG.md")
@@ -144,12 +162,13 @@ def main():
 
         # Update files
         update_pyproject_toml(new_version)
+        update_pyodide_loader(new_version)
         update_changelog(new_version)
 
         print(f"🎉 Successfully bumped {bump_type} version: {current_version} → {new_version}")
         print(f"📝 Don't forget to:")
         print(f"   1. Edit CHANGELOG.md to add actual changes")
-        print(f"   2. Stage only version files: git add pyproject.toml CHANGELOG.md")
+        print(f"   2. Stage version files: git add pyproject.toml CHANGELOG.md docs/demo/js/pyodide_loader.js")
         print(f"   3. Commit: git commit -m 'Bump version to {new_version}'")
         print(f"   4. Upload: make upload (or make upload-test for TestPyPI)")
 

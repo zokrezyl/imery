@@ -1,7 +1,7 @@
 // js/pyodide.js
 
 // Imery version - updated by build process
-const IMERY_VERSION = "0.0.39";
+const IMERY_VERSION = "0.0.45";
 
 async function load_pyodide_imgui_render() {
     console.log('Loading load_pyodide_imgui_render.py');
