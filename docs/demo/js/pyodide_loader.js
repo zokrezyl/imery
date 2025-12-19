@@ -1,7 +1,7 @@
 // js/pyodide.js
 
 // Imery version - updated by build process
-const IMERY_VERSION = "0.0.53";
+const IMERY_VERSION = "0.0.54";
 
 async function load_pyodide_imgui_render() {
     console.log('Loading load_pyodide_imgui_render.py');
@@ -88,6 +88,7 @@ async function loadPyodideAndPackages() {
             'munch',
             'pillow',
             'typing_extensions',
+            'matplotlib',
 
             // ImGui Bundle (Pyodide-compatible, installed via micropip)
             // ----------------------------------------------------------
