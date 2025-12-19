@@ -29,7 +29,7 @@ import:
   - examples.implot-demo
   - examples.implot3d-demo
   - examples.markdown-demo
-  # - examples.node-editor-demo
+  - examples.node-editor-demo
   - examples.text-editor-demo
   - examples.immvision-demo
   # - examples.nanovg-demo
@@ -290,11 +290,11 @@ widgets:
                 - examples.implot3d-demo.implot3d-demo:
 
     # 5. Node Editor
-#    - dockable-window:
-#        label: "Node Editor"
-#        dock-space-name: "MainDockSpace"
-#        body:
-#          - examples.node-editor-demo.node-editor-demo:
+    - dockable-window:
+        label: "Node Editor"
+        dock-space-name: "MainDockSpace"
+        body:
+          - examples.node-editor-demo.node-editor-demo:
 
     # 6. Markdown
     - dockable-window:
