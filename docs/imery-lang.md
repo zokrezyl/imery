@@ -516,6 +516,164 @@ child:
     - text: "Content"
 ```
 
+## GUI-Python Interaction Architecture
+
+This section explains how Imery GUI elements interact with Python code through the DataBag interface.
+
+### The DataBag Interface
+
+Every widget in Imery accesses data through a **DataBag** object. DataBag provides a unified interface for reading and writing values, regardless of where the data comes from.
+
+```python
+# Widget code uses DataBag to access values
+class MyWidget(Widget):
+    def _pre_render_head(self):
+        # Get a value (with optional default)
+        res = self._data_bag.get("label")
+        if res:
+            label = res.unwrapped
+
+        # Get with default value
+        res = self._data_bag.get("width", 100)
+        width = res.unwrapped
+
+        # Set a value
+        self._data_bag.set("label", new_value)
+```
+
+**Key DataBag methods:**
+- `get(key, default=None)` - Read a value from the data context
+- `set(key, value)` - Write a value to the data context
+- `get_static(key, default=None)` - Read from widget's static YAML definition only
+
+### TreeLike Interface
+
+Behind DataBag are objects implementing the **TreeLike** interface. TreeLike provides a hierarchical key-value store abstraction:
+
+```python
+class TreeLike(Protocol):
+    def get_metadata(self, key: str) -> Result[Any]
+    def set_metadata(self, key: str, value: Any) -> Result[None]
+    def get_child(self, name: str) -> Result['TreeLike']
+    def get_children(self) -> Result[Dict[str, 'TreeLike']]
+    def add_child(self, name: str, metadata: dict) -> Result['TreeLike']
+```
+
+### Data Sources
+
+DataBag combines multiple data sources with a priority order:
+
+1. **Widget Static Layout** (lowest priority)
+   - Values defined directly in YAML widget definition
+   - Read-only, defined at widget creation time
+   ```yaml
+   button:
+     head:
+       label: "Click Me"      # Static value
+       tooltip: "Help text"   # Static value
+   ```
+
+2. **Main Data Tree** (medium priority)
+   - The application's primary data structure
+   - Read-write, persists across widget renders
+   - Accessed via `data-id` and `@` paths
+   ```yaml
+   data:
+     app-data:
+       metadata:
+         label: "Dynamic Value"
+   ```
+
+3. **Local Data Tree** (high priority)
+   - Widget-scoped temporary data
+   - Read-write, exists only while widget is active
+   - Accessed via `$local@path`
+   ```yaml
+   my-popup:
+     type: popup
+     local:
+       metadata:
+         temp-value: "Editing..."
+   ```
+
+4. **Named Trees** (accessed explicitly)
+   - Special trees like `kernel` for external data
+   - Accessed via `$treename@path` syntax
+   ```yaml
+   label: "$kernel@/audio/sample-rate"
+   ```
+
+### The Kernel
+
+The **Kernel** is a special TreeLike that provides access to external Python data sources:
+
+```yaml
+data:
+  app-data:
+    children:
+      kernel: $kernel    # Substituted at runtime
+```
+
+The kernel allows:
+- Browsing external data (files, audio, etc.)
+- Providing dynamic data to the UI
+- Connecting Python backend to the declarative UI
+
+### Data Flow Diagram
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     Widget Instance                          │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │                    DataBag                           │    │
+│  │  ┌─────────────┬─────────────┬─────────────────┐    │    │
+│  │  │ Static YAML │  Data Tree  │   Local Tree    │    │    │
+│  │  │  (layout)   │   (main)    │   (widget)      │    │    │
+│  │  └─────────────┴──────┬──────┴─────────────────┘    │    │
+│  └───────────────────────│─────────────────────────────┘    │
+└──────────────────────────│──────────────────────────────────┘
+                           │
+                           ▼
+              ┌────────────────────────┐
+              │    Named Trees         │
+              │  ┌──────────────────┐  │
+              │  │  kernel (Python) │  │
+              │  │  local (widget)  │  │
+              │  └──────────────────┘  │
+              └────────────────────────┘
+```
+
+### Example: Complete Data Flow
+
+```yaml
+# Widget definition with all data sources
+my-form:
+  type: popup
+  local:                              # Local tree (widget-scoped)
+    metadata:
+      editing-name: ""
+  body:
+    - text:
+        head:
+          label: "Enter name:"        # Static (from YAML)
+    - input-text:
+        head:
+          label: "$local@editing-name"  # Local tree (read-write)
+    - text:
+        head:
+          label: "@/user/name"        # Main data tree
+    - text:
+        head:
+          label: "$kernel@/system/time"  # Kernel (Python backend)
+```
+
+When the `input-text` widget calls `self._data_bag.get("label")`:
+1. DataBag checks local tree for `$local@editing-name`
+2. Resolves the path and returns the value
+3. Widget renders with that value
+4. User edits → widget calls `set("label", new_value)`
+5. DataBag writes back to local tree
+
 ## Tips
 
 1. **Use namespaces** - Organize widgets into modules for maintainability
