@@ -9,9 +9,9 @@ widgets:
           language: "python"
           size: [700, 400]
 
-      - separator-text: "JavaScript Editor"
+      - separator-text: "C++ Editor"
 
-      - data-id: javascript-code
+      - data-id: cpp-code
         text-editor:
-          language: "javascript"
+          language: "cpp"
           size: [700, 300]

@@ -96,16 +96,20 @@ data:
 
             # Edit this code
             hello_world()
-      javascript-code:
+      cpp-code:
         metadata:
           label: |
-            function helloWorld() {
-                console.log("Hello from ImGui!");
-                return true;
+            #include <iostream>
+
+            void hello_world() {
+                std::cout << "Hello from ImGui!" << std::endl;
             }
 
             // Edit this code
-            helloWorld();
+            int main() {
+                hello_world();
+                return 0;
+            }
       prop-name:
         metadata:
           label: "Object1"
