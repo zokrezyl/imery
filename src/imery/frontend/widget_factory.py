@@ -49,7 +49,7 @@ class WidgetFactory(Object):
 
     def init(self) -> Result[None]:
         """Load widget classes dynamically from widgets_path"""
-        from imery.frontend.decorators import _pending_widgets
+        from imery.decorators import _pending_widgets
 
         # Build list of widget directories from colon-separated path
         widget_dirs = []

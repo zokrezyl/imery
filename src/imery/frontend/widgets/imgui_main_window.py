@@ -4,7 +4,7 @@ Main window widgets for running applications
 
 from imgui_bundle import imgui, implot, immapp, hello_imgui
 from imery.frontend.widget import Widget
-from imery.frontend.decorators import widget
+from imery.decorators import widget
 from imery.types import DataPath
 from imery.backend.types import TreeLike
 from imery.result import Result, Ok

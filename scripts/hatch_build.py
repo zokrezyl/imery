@@ -223,11 +223,14 @@ class CustomBuildHook(BuildHookInterface):
                 print(f"  Error aggregating {demo_dir.name}: {e}")
                 # Continue with other demos even if one fails
 
-        # Write examples.json
+        # Write examples.json with version
         examples_json_path = aggregated_dir / "examples.json"
         with open(examples_json_path, 'w') as f:
-            json.dump({"examples": examples}, f, indent=2)
+            json.dump({
+                "version": version,
+                "examples": examples
+            }, f, indent=2)
             f.write('\n')
 
         print(f"Successfully aggregated {aggregated_count} demo files")
-        print(f"Generated {examples_json_path} with {len(examples)} examples")
+        print(f"Generated {examples_json_path} with {len(examples)} examples (version {version})")

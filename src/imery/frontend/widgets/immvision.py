@@ -4,7 +4,7 @@ ImmVision widgets - Image visualization and inspection
 
 from imgui_bundle import immvision, ImVec2, imgui, hello_imgui
 from imery.frontend.widget import Widget
-from imery.frontend.decorators import widget
+from imery.decorators import widget
 from imery.result import Result, Ok
 import numpy as np
 from pathlib import Path

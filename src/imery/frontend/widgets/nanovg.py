@@ -4,7 +4,7 @@ NanoVG widgets - Vector graphics rendering
 
 from imgui_bundle import imgui, nanovg as nvg, hello_imgui, ImVec2
 from imery.frontend.widget import Widget
-from imery.frontend.decorators import widget
+from imery.decorators import widget
 from imery.result import Result, Ok
 import math
 

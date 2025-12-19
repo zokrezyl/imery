@@ -9,9 +9,10 @@ from imery.backend.audio_buffer import DynamicAudioRingBuffer, DynamicAudioBuffe
 from imery.result import Result, Ok
 
 from typing import List, Dict, Any, Union
-from imery.backend.decorators import device_manager
+from imery.decorators import device_manager, device
 
 
+@device
 class WaveformDevice(AudioDevice, threading.Thread):
     """Generates waveform data in a ring buffer"""
 

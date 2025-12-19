@@ -4,7 +4,7 @@ ImGuizmo widgets - 3D gizmo manipulation
 
 from imgui_bundle import imgui
 from imery.frontend.widget import Widget
-from imery.frontend.decorators import widget
+from imery.decorators import widget
 from imery.result import Result, Ok
 
 

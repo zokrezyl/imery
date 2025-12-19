@@ -8,7 +8,7 @@ from imery.backend.audio_buffer import DynamicAudioRingBuffer, DynamicAudioBuffe
 from imery.result import Result, Ok
 
 from typing import List, Dict, Any, Union, Callable, Optional
-from imery.backend.decorators import device_manager
+from imery.decorators import device_manager, device
 
 
 class OnDemandAudioRingBuffer(DynamicAudioRingBuffer):
@@ -87,6 +87,7 @@ class OnDemandAudioRingBuffer(DynamicAudioRingBuffer):
         return super().data
 
 
+@device
 class WaveformDeviceST(AudioDevice):
     """Single-threaded waveform generator for Pyodide/WebAssembly environments."""
 

@@ -3,7 +3,7 @@ HelloImGui-specific widgets for menu bar integration
 """
 
 from imery.frontend.composite import Composite
-from imery.frontend.decorators import widget
+from imery.decorators import widget
 
 
 @widget

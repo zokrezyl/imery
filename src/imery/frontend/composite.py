@@ -3,7 +3,7 @@ Composite widgets - containers for other widgets
 """
 
 from imery.frontend.widget import Widget
-from imery.frontend.decorators import widget
+from imery.decorators import widget
 from imery.types import DataPath
 from imery.result import Result, Ok
 

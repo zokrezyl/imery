@@ -4,7 +4,7 @@ Markdown widgets - Markdown rendering with imgui_md
 
 from imgui_bundle import imgui_md
 from imery.frontend.widget import Widget
-from imery.frontend.decorators import widget
+from imery.decorators import widget
 from imery.result import Result, Ok
 
 
