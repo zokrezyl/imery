@@ -106,13 +106,13 @@ async function loadPyodideAndPackages() {
             updateProgress(10 + (currentStep / totalSteps) * 80, `Installing ${pkg}...`);
             console.log(`Installing ${pkg}...`);
             try {
-                const installCode = pkg === 'imery'
+                const installCode = pkg.startsWith('imery')
                     ? `
 import micropip
 import sys
 print(f"Python version: {sys.version}")
-print(f"Installing imery...")
-await micropip.install('imery', keep_going=True, deps=True)
+print(f"Installing ${pkg}...")
+await micropip.install('${pkg}', keep_going=True, deps=True)
 import imery
 print(f"imery version: {imery.__version__ if hasattr(imery, '__version__') else 'unknown'}")
 `
