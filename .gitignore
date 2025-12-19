@@ -78,6 +78,8 @@ docs/wheels/*.whl
 
 # Aggregated demo files (generated during build)
 demo-aggregated/
+docs/demo/examples/*.yaml
+docs/demo/examples/examples.json
 
 # PyBuilder
 .pybuilder/
