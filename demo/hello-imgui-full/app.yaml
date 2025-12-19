@@ -31,7 +31,7 @@ import:
   - examples.markdown-demo
   # - examples.node-editor-demo
   - examples.text-editor-demo
-  # - examples.immvision-demo
+  - examples.immvision-demo
   # - examples.nanovg-demo
   # - examples.imguizmo-demo
   - examples.tex-inspect-demo
@@ -317,12 +317,12 @@ widgets:
         body:
           - examples.widgets-demo.widgets-demo:
 
-#    # 9. ImmVision
-#    - dockable-window:
-#        label: "ImmVision"
-#        dock-space-name: "MainDockSpace"
-#        body:
-#          - examples.immvision-demo.immvision-demo:
+    # 9. ImmVision
+    - dockable-window:
+        label: "ImmVision"
+        dock-space-name: "MainDockSpace"
+        body:
+          - examples.immvision-demo.immvision-demo:
 
 #    # 10. NanoVG
 #    - dockable-window:
