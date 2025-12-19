@@ -8,7 +8,7 @@ from imery.types import DataPath, Object, ActionHandler
 from imery.result import Result, Ok
 
 from imery.logging import log
-from imery.backend.decorators import _pending_device_managers
+from imery.decorators import _pending_device_managers, _pending_devices
 
 from pprint import pp
 

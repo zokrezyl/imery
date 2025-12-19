@@ -4,7 +4,7 @@ NodeEditor widgets - Node-based visual programming
 
 from imgui_bundle import imgui, imgui_node_editor as ed, ImVec2
 from imery.frontend.widget import Widget
-from imery.frontend.decorators import widget
+from imery.decorators import widget
 from imery.result import Result, Ok
 
 

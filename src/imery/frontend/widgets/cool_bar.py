@@ -4,7 +4,7 @@ CoolBar widgets - Dock-like cool bar using im_cool_bar
 
 from imgui_bundle import imgui, im_cool_bar, hello_imgui, ImVec2, immapp
 from imery.frontend.widget import Widget
-from imery.frontend.decorators import widget
+from imery.decorators import widget
 from imery.result import Result, Ok
 
 

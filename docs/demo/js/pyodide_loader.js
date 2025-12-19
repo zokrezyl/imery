@@ -60,6 +60,13 @@ async function loadPyodideAndPackages() {
     try {
         showLoadingModal();
         updateProgress(0, 'Loading Pyodide...');
+
+        // Load examples.json to get the required imery version
+        const examplesResponse = await fetch('examples/examples.json');
+        const examplesData = await examplesResponse.json();
+        const imeryVersion = examplesData.version || 'latest';
+        console.log(`Target imery version: ${imeryVersion}`);
+
         pyodide = await loadPyodide();
         const pythonVersion = pyodide.runPython("import sys; sys.version");
         updateProgress(7, 'Pyodide loaded.');
@@ -71,7 +78,7 @@ async function loadPyodideAndPackages() {
         // SDL support in Pyodide is experimental. The flag is used to bypass certain issues.
         pyodide._api._skip_unwind_fatal_error = true;
 
-        // List of packages to install
+        // List of packages to install (imery version from examples.json)
         const packages = [
             // Core Python packages from PyPI
             // ------------------------------
@@ -87,9 +94,9 @@ async function loadPyodideAndPackages() {
             // ----------------------------------------------------------
             'imgui_bundle',
 
-            // Imery (from PyPI)
+            // Imery (from PyPI) - pinned to version from build
             // -----------------
-            'imery',
+            `imery==${imeryVersion}`,
         ];
 
         const totalSteps = packages.length;

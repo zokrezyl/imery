@@ -4,7 +4,7 @@ TextEditor widgets - Code editor with syntax highlighting
 
 from imgui_bundle import imgui, imgui_color_text_edit as ed
 from imery.frontend.widget import Widget
-from imery.frontend.decorators import widget
+from imery.decorators import widget
 from imery.result import Result, Ok
 
 

@@ -13,7 +13,7 @@ from functools import lru_cache
 from imery.backend.types import AudioDeviceManager, AudioDevice, TreeLikeCache
 from imery.types import DataPath
 from imery.backend.audio_buffer import FileAudioBuffer, StaticAudioBufferMediator
-from imery.backend.decorators import device_manager
+from imery.decorators import device_manager, device
 
 from imery.result import Result, Ok
 
@@ -80,6 +80,7 @@ class SoundfileBuffer(FileAudioBuffer):
         pass
 
 
+@device
 class SoundfileDevice(AudioDevice):
     """File-based audio device with per-channel buffers.
 

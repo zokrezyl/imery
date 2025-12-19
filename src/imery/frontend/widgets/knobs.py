@@ -4,7 +4,7 @@ Knobs widgets - Rotary knobs using imgui_knobs
 
 from imgui_bundle import imgui, imgui_knobs, immapp
 from imery.frontend.widget import Widget
-from imery.frontend.decorators import widget
+from imery.decorators import widget
 from imery.result import Result, Ok
 
 

@@ -4,7 +4,7 @@ Toggle widgets - Toggle switches using imgui_toggle
 
 from imgui_bundle import imgui, imgui_toggle
 from imery.frontend.widget import Widget
-from imery.frontend.decorators import widget
+from imery.decorators import widget
 from imery.result import Result, Ok
 
 
