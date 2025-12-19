@@ -33,7 +33,7 @@ import:
   - examples.text-editor-demo
   - examples.immvision-demo
   # - examples.nanovg-demo
-  # - examples.imguizmo-demo
+  - examples.imguizmo-demo
   - examples.tex-inspect-demo
   - examples.widgets-demo
 
@@ -331,12 +331,12 @@ widgets:
 #        body:
 #          - examples.nanovg-demo.nanovg-demo:
 
-#    # 11. ImGuizmo
-#    - dockable-window:
-#        label: "ImGuizmo"
-#        dock-space-name: "MainDockSpace"
-#        body:
-#          - examples.imguizmo-demo.imguizmo-demo:
+    # 11. ImGuizmo
+    - dockable-window:
+        label: "ImGuizmo"
+        dock-space-name: "MainDockSpace"
+        body:
+          - examples.imguizmo-demo.imguizmo-demo:
 
     # 12. Themes
     - dockable-window:
