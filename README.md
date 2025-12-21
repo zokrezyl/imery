@@ -1,6 +1,10 @@
 
-**OBSOLETE NOTIFICATION**
+# OBSOLETE NOTIFICATION
+
+
 For branding/naming reason we moved/renamed at this early stage the project to https://github.com/zokrezyl/ymery
+
+
 # Imery
 
 **Build interactive GUI applications with YAML instead of code.**
